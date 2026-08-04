@@ -1,0 +1,14 @@
+{
+  "configurations": [
+    {
+      "type": "java",
+      "name": "Spring Boot-Main<financeIaemail>",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "mainClass": "com.microservice.Main",
+      "projectName": "financeIaemail",
+      "args": "",
+      "envFile": "${workspaceFolder}/.env"
+    }
+  ]
+}
