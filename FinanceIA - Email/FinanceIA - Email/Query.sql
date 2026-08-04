@@ -1,0 +1,1 @@
+select * from "emailDB".public.finance_email_sender
