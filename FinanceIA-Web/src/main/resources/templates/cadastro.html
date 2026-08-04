@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Crie sua conta no Gestão Financeira" />
+    <title>Criar conta | Gestão Financeira</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <script defer th:src="@{/webjars/htmx.org/2.0.4/dist/htmx.min.js}"></script>
+    <script defer th:src="@{/js/login.js}"></script>
+    <script defer th:src="@{/js/cadastro.js}"></script>
+    <script defer th:src="@{/js/password-toggle.js}"></script>
+  </head>
+  <body class="login-page registration-page">
+    <a class="auth-home-link" th:href="@{/}" aria-label="Voltar para a página inicial">← Voltar ao início</a>
+    <main class="login-shell auth-split-shell registration-shell">
+      <section class="auth-showcase registration-showcase" aria-label="Apresentação do Gestão Financeira">
+        <div class="auth-brand"><span class="auth-brand-mark">GF</span><strong>Gestão Financeira</strong></div>
+        <div class="auth-showcase-copy">
+          <span class="auth-kicker">Comece agora</span>
+          <h2>Organizar sua vida financeira pode ser simples.</h2>
+          <p>Crie sua conta e tenha uma visão clara das suas entradas, saídas e hábitos financeiros.</p>
+        </div>
+        <div class="auth-benefits" aria-label="Benefícios da plataforma">
+          <span><i>1</i> Cadastre suas movimentações</span>
+          <span><i>2</i> Acompanhe o resumo do mês</span>
+          <span><i>3</i> Tome decisões com mais confiança</span>
+        </div>
+      </section>
+
+      <section class="login-card registration-card" aria-labelledby="registration-title">
+        <header class="login-header registration-header">
+          <span class="auth-mobile-mark" aria-hidden="true">GF</span>
+          <p class="auth-kicker">Cadastro gratuito</p>
+          <h1 id="registration-title">Crie sua conta</h1>
+          <p>Leva menos de dois minutos para começar.</p>
+        </header>
+
+        <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+
+        <form class="login-form registration-form" th:action="@{/web-cadastro}" method="post" hx-boost="true" data-loading-label="Criando conta...">
+          <div class="field-group">
+            <label for="nome">Nome</label>
+            <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Seu nome completo" required autofocus />
+          </div>
+
+          <div class="field-group">
+            <label for="email">E-mail</label>
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="seu@email.com" required />
+          </div>
+
+          <div class="field-group">
+            <label for="telefone">Telefone</label>
+            <input id="telefone" name="telefone" type="tel" autocomplete="tel" placeholder="(00) 00000-0000" required />
+          </div>
+
+          <div class="field-group">
+            <label for="senha">Senha</label>
+            <input id="senha" name="senha" type="password" autocomplete="new-password" placeholder="••••••••" minlength="8" aria-describedby="password-requirements" required />
+            <div id="password-requirements" class="password-requirements" aria-live="polite">
+              <p>A senha deve conter:</p>
+              <ul>
+                <li data-requirement="lower">Letra minúscula</li>
+                <li data-requirement="upper">Letra maiúscula</li>
+                <li data-requirement="number">Número</li>
+                <li data-requirement="special">Caractere especial (!@#$%^&amp;*...)</li>
+                <li data-requirement="length">Mínimo 8 caracteres</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="confirmarSenha">Confirmar Senha</label>
+            <input id="confirmarSenha" name="confirmarSenha" type="password" autocomplete="new-password" placeholder="••••••••" minlength="8" aria-describedby="password-match" required />
+            <p id="password-match" class="password-match" aria-live="polite"></p>
+          </div>
+
+          <button class="submit-button registration-submit" type="submit">
+            <span data-submit-label>Criar minha conta</span>
+            <span class="spinner" data-spinner hidden aria-hidden="true"></span>
+          </button>
+
+          <p class="login-return">Já tem uma conta? <a th:href="@{/login}">Entrar agora</a></p>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

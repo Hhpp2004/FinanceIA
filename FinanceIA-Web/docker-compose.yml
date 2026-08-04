@@ -1,0 +1,27 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: banco_de_dados
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  dbTeste:
+    image: postgres:15-alpine
+    container_name: banco_de_dados_teste
+    environment:
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_DB: financeTeste
+    ports:
+      - "5433:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      
+volumes:
+  pgdata:

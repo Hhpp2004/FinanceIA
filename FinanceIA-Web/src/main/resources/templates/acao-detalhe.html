@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${acao != null ? acao.stock + ' | Gestão Financeira' : 'Ação não encontrada | Gestão Financeira'}">Detalhes da ação</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="stock-detail-page">
+    <header class="statement-header">
+        <a th:href="@{/app}"><span aria-hidden="true">←</span> Voltar para o painel</a>
+        <h1>Detalhes da ação</h1>
+    </header>
+
+    <main class="stock-detail-main">
+        <section class="stock-error-card" th:if="${erro}" role="alert">
+            <span aria-hidden="true">!</span>
+            <div>
+                <h2 th:text="${codigo}">PETR4</h2>
+                <p th:text="${erro}">Não foi possível consultar esta ação.</p>
+            </div>
+        </section>
+
+        <article class="stock-detail-card" th:if="${acao != null}">
+            <div class="stock-detail-heading">
+                <span class="stock-detail-logo">
+                    <img th:if="${acao.logo != null and !#strings.isEmpty(acao.logo)}" th:src="${acao.logo}" alt="">
+                    <span th:unless="${acao.logo != null and !#strings.isEmpty(acao.logo)}" th:text="${#strings.substring(acao.stock, 0, 1)}">P</span>
+                </span>
+                <div>
+                    <p class="eyebrow">Cotação</p>
+                    <h2 th:text="${acao.stock}">PETR4</h2>
+                    <p th:text="${acao.longName != null ? acao.longName : acao.name}">Empresa</p>
+                </div>
+            </div>
+
+            <div class="stock-price">
+                <small>Preço atual</small>
+                <strong th:text="${acao.close != null ? #numbers.formatCurrency(acao.close) : '—'}">R$ 0,00</strong>
+                <span th:if="${acao.change != null}"
+                      th:classappend="${acao.change >= 0} ? ' stock-positive' : ' stock-negative'"
+                      th:text="${(acao.change >= 0 ? '+' : '') + #numbers.formatDecimal(acao.change, 1, 2) + '%'}">0,00%</span>
+            </div>
+
+            <dl class="stock-data-grid">
+                <div><dt>Nome curto</dt><dd th:text="${acao.name != null ? acao.name : '—'}">Empresa</dd></div>
+                <div><dt>Moeda</dt><dd th:text="${acao.currency != null ? acao.currency : '—'}">BRL</dd></div>
+                <div><dt>Abertura</dt><dd th:text="${acao.regularMarketOpen != null ? #numbers.formatCurrency(acao.regularMarketOpen) : '—'}">—</dd></div>
+                <div><dt>Fechamento anterior</dt><dd th:text="${acao.regularMarketPreviousClose != null ? #numbers.formatCurrency(acao.regularMarketPreviousClose) : '—'}">—</dd></div>
+                <div><dt>Máxima do dia</dt><dd th:text="${acao.regularMarketDayHigh != null ? #numbers.formatCurrency(acao.regularMarketDayHigh) : '—'}">—</dd></div>
+                <div><dt>Mínima do dia</dt><dd th:text="${acao.regularMarketDayLow != null ? #numbers.formatCurrency(acao.regularMarketDayLow) : '—'}">—</dd></div>
+                <div><dt>Variação em reais</dt><dd th:text="${acao.regularMarketChange != null ? #numbers.formatCurrency(acao.regularMarketChange) : '—'}">—</dd></div>
+                <div><dt>Faixa do dia</dt><dd th:text="${acao.regularMarketDayRange != null ? acao.regularMarketDayRange : '—'}">—</dd></div>
+                <div><dt>Volume</dt><dd th:text="${acao.regularMarketVolume != null ? #numbers.formatInteger(acao.regularMarketVolume, 1, 'POINT') : '—'}">—</dd></div>
+                <div><dt>Valor de mercado</dt><dd th:text="${acao.marketCap != null ? #numbers.formatCurrency(acao.marketCap) : '—'}">—</dd></div>
+                <div><dt>Mínima em 52 semanas</dt><dd th:text="${acao.fiftyTwoWeekLow != null ? #numbers.formatCurrency(acao.fiftyTwoWeekLow) : '—'}">—</dd></div>
+                <div><dt>Máxima em 52 semanas</dt><dd th:text="${acao.fiftyTwoWeekHigh != null ? #numbers.formatCurrency(acao.fiftyTwoWeekHigh) : '—'}">—</dd></div>
+                <div><dt>Faixa de 52 semanas</dt><dd th:text="${acao.fiftyTwoWeekRange != null ? acao.fiftyTwoWeekRange : '—'}">—</dd></div>
+                <div><dt>Preço / lucro</dt><dd th:text="${acao.priceEarnings != null ? #numbers.formatDecimal(acao.priceEarnings, 1, 2) : '—'}">—</dd></div>
+                <div><dt>Lucro por ação</dt><dd th:text="${acao.earningsPerShare != null ? #numbers.formatDecimal(acao.earningsPerShare, 1, 2) : '—'}">—</dd></div>
+            </dl>
+        </article>
+    </main>
+</body>
+</html>

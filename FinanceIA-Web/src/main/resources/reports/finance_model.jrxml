@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Created with Jaspersoft Studio version 9.0.3.final using JasperReports Library version 6.21.6-ef58807af469abb082e2f734b1e78a3c47daad18  -->
+<jasperReport xmlns="http://jasperreports.sourceforge.net/jasperreports" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://jasperreports.sourceforge.net/jasperreports http://jasperreports.sourceforge.net/xsd/jasperreport.xsd" name="finance_model" pageWidth="595" pageHeight="842" columnWidth="555" leftMargin="20" rightMargin="20" topMargin="20" bottomMargin="20" uuid="63694f7c-89c4-4f3d-b2b3-6e3b56b30b3c">
+	<property name="com.jaspersoft.studio.data.sql.tables" value=""/>
+	<property name="com.jaspersoft.studio.data.defaultdataadapter" value="New Data Adapter"/>
+	<parameter name="USER_ID" class="java.lang.Integer"/>
+	<parameter name="EXTRATO_ID" class="java.lang.String"/>
+	<queryString language="SQL">
+		<![CDATA[SELECT
+    o.id             AS operacao_id,
+    o.categoria      AS operacao_categoria,
+    o.data           AS operacao_data,
+    o.descricao      AS operacao_descricao,
+    o.nome           AS operacao_nome,
+    o.time           AS operacao_time,
+    o.valor          AS operacao_valor,
+    o.tipo           AS operacao_tipo,
+
+    e.date           AS extrato_data,
+    e.nome           AS extrato_nome,
+    e.saldo_id       AS extrato_saldo_id,
+
+    se.saldo_atual   AS extrato_saldo_atual,
+    se.saldo_entrada AS extrato_saldo_entrada,
+    se.saldo_saida   AS extrato_saldo_saida,
+
+    u.nome           AS usuario_nome,
+    u.telefone       AS usuario_telefone,
+    u.email          AS usuario_email,
+    u.saldo_id       AS usuario_saldo_id,
+
+    su.saldo_atual   AS usuario_saldo_atual,
+    COALESCE((
+        SELECT SUM(ABS(operacao_mes.valor))
+        FROM operacao operacao_mes
+        INNER JOIN extrato extrato_mes
+            ON operacao_mes.extrato_id = extrato_mes.id
+        WHERE extrato_mes.user_id = u.id
+          AND operacao_mes.tipo = 'ENTRADA'
+          AND operacao_mes.data BETWEEN date_trunc('month', CURRENT_DATE)::date
+              AND (date_trunc('month', CURRENT_DATE) + INTERVAL '1 month - 1 day')::date
+    ), 0) AS usuario_saldo_entrada,
+    COALESCE((
+        SELECT SUM(ABS(operacao_mes.valor))
+        FROM operacao operacao_mes
+        INNER JOIN extrato extrato_mes
+            ON operacao_mes.extrato_id = extrato_mes.id
+        WHERE extrato_mes.user_id = u.id
+          AND operacao_mes.tipo = 'SAIDA'
+          AND operacao_mes.data BETWEEN date_trunc('month', CURRENT_DATE)::date
+              AND (date_trunc('month', CURRENT_DATE) + INTERVAL '1 month - 1 day')::date
+    ), 0) AS usuario_saldo_saida
+
+FROM operacao o
+
+INNER JOIN extrato e
+    ON o.extrato_id = e.id
+
+INNER JOIN users u
+    ON e.user_id = u.id
+
+INNER JOIN saldo se
+    ON e.saldo_id = se.saldo
+
+INNER JOIN saldo su
+    ON u.saldo_id = su.saldo
+
+WHERE u.id = $P{USER_ID}
+  AND e.id = CAST($P{EXTRATO_ID} AS uuid)
+
+ORDER BY o.id ASC]]>
+	</queryString>
+	<field name="operacao_id" class="java.util.UUID">
+		<property name="com.jaspersoft.studio.field.name" value="operacao_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="operacao_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="operacao"/>
+	</field>
+	<field name="operacao_categoria" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="operacao_categoria"/>
+		<property name="com.jaspersoft.studio.field.label" value="operacao_categoria"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="operacao"/>
+	</field>
+	<field name="operacao_data" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="operacao_data"/>
+		<property name="com.jaspersoft.studio.field.label" value="operacao_data"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="operacao"/>
+	</field>
+	<field name="operacao_descricao" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="operacao_descricao"/>
+		<property name="com.jaspersoft.studio.field.label" value="operacao_descricao"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="operacao"/>
+	</field>
+	<field name="operacao_nome" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="operacao_nome"/>
+		<property name="com.jaspersoft.studio.field.label" value="operacao_nome"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="operacao"/>
+	</field>
+	<field name="operacao_time" class="java.sql.Time">
+		<property name="com.jaspersoft.studio.field.name" value="operacao_time"/>
+		<property name="com.jaspersoft.studio.field.label" value="operacao_time"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="operacao"/>
+	</field>
+	<field name="operacao_valor" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="operacao_valor"/>
+		<property name="com.jaspersoft.studio.field.label" value="operacao_valor"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="operacao"/>
+	</field>
+	<field name="operacao_tipo" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="operacao_tipo"/>
+		<property name="com.jaspersoft.studio.field.label" value="operacao_tipo"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="operacao"/>
+	</field>
+	<field name="extrato_data" class="java.sql.Date">
+		<property name="com.jaspersoft.studio.field.name" value="extrato_data"/>
+		<property name="com.jaspersoft.studio.field.label" value="extrato_data"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="extrato"/>
+	</field>
+	<field name="extrato_nome" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="extrato_nome"/>
+		<property name="com.jaspersoft.studio.field.label" value="extrato_nome"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="extrato"/>
+	</field>
+	<field name="extrato_saldo_id" class="java.util.UUID">
+		<property name="com.jaspersoft.studio.field.name" value="extrato_saldo_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="extrato_saldo_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="extrato"/>
+	</field>
+	<field name="extrato_saldo_atual" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="extrato_saldo_atual"/>
+		<property name="com.jaspersoft.studio.field.label" value="extrato_saldo_atual"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="saldo"/>
+	</field>
+	<field name="extrato_saldo_entrada" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="extrato_saldo_entrada"/>
+		<property name="com.jaspersoft.studio.field.label" value="extrato_saldo_entrada"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="saldo"/>
+	</field>
+	<field name="extrato_saldo_saida" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="extrato_saldo_saida"/>
+		<property name="com.jaspersoft.studio.field.label" value="extrato_saldo_saida"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="saldo"/>
+	</field>
+	<field name="usuario_nome" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="usuario_nome"/>
+		<property name="com.jaspersoft.studio.field.label" value="usuario_nome"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="users"/>
+	</field>
+	<field name="usuario_telefone" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="usuario_telefone"/>
+		<property name="com.jaspersoft.studio.field.label" value="usuario_telefone"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="users"/>
+	</field>
+	<field name="usuario_email" class="java.lang.String">
+		<property name="com.jaspersoft.studio.field.name" value="usuario_email"/>
+		<property name="com.jaspersoft.studio.field.label" value="usuario_email"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="users"/>
+	</field>
+	<field name="usuario_saldo_id" class="java.util.UUID">
+		<property name="com.jaspersoft.studio.field.name" value="usuario_saldo_id"/>
+		<property name="com.jaspersoft.studio.field.label" value="usuario_saldo_id"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="users"/>
+	</field>
+	<field name="usuario_saldo_atual" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="usuario_saldo_atual"/>
+		<property name="com.jaspersoft.studio.field.label" value="usuario_saldo_atual"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="saldo"/>
+	</field>
+	<field name="usuario_saldo_entrada" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="usuario_saldo_entrada"/>
+		<property name="com.jaspersoft.studio.field.label" value="usuario_saldo_entrada"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="saldo"/>
+	</field>
+	<field name="usuario_saldo_saida" class="java.lang.Double">
+		<property name="com.jaspersoft.studio.field.name" value="usuario_saldo_saida"/>
+		<property name="com.jaspersoft.studio.field.label" value="usuario_saldo_saida"/>
+		<property name="com.jaspersoft.studio.field.tree.path" value="saldo"/>
+	</field>
+	<background>
+		<band splitType="Stretch"/>
+	</background>
+	<title>
+		<band height="207" splitType="Stretch">
+			<staticText>
+				<reportElement x="150" y="0" width="140" height="30" uuid="98789d92-4d03-46bf-b7d5-b268d38dd417"/>
+				<text><![CDATA[Relatorio de Transações]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="290" y="0" width="100" height="30" uuid="a190c2c1-1bbf-48d3-b662-3a5267dbbf1e"/>
+				<textFieldExpression><![CDATA[$F{extrato_nome}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="-12" y="40" width="579" height="1" uuid="039640d7-4ef2-445c-8c12-18112b6a165a"/>
+			</line>
+			<staticText>
+				<reportElement x="0" y="90" width="150" height="30" uuid="c1c7f3c5-cb42-420a-8f38-f47abd7f3abc"/>
+				<text><![CDATA[Saldo Atual do Extrato:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="120" width="150" height="30" uuid="fa3010f6-468b-473c-a35f-c77059bfc7b1"/>
+				<text><![CDATA[Saldo de Saída do Extrato:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="0" y="60" width="150" height="30" uuid="95ee84cf-cc11-40a1-8617-31407f56e3d1"/>
+				<text><![CDATA[Saldo de Entrada do Extrato:]]></text>
+			</staticText>
+			<textField pattern="R$ #,##0.00">
+				<reportElement x="150" y="60" width="140" height="30" uuid="f6b135b6-8d1d-4099-9c77-df6c47c07778"/>
+				<textFieldExpression><![CDATA[$F{extrato_saldo_entrada}]]></textFieldExpression>
+			</textField>
+			<textField pattern="R$ #,##0.00">
+				<reportElement x="150" y="90" width="140" height="30" uuid="481918cd-359a-4e73-8189-c9ecc7722be6"/>
+				<textFieldExpression><![CDATA[$F{extrato_saldo_atual}]]></textFieldExpression>
+			</textField>
+			<textField pattern="R$ #,##0.00">
+				<reportElement x="150" y="120" width="140" height="30" uuid="61dd5830-b1f1-4197-bc8c-3e628215af53"/>
+				<textFieldExpression><![CDATA[$F{extrato_saldo_saida}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="300" y="60" width="100" height="30" uuid="4d0562c1-5051-4a2b-a694-18357d89f6a1"/>
+				<text><![CDATA[Periodo do Extrato:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="400" y="60" width="160" height="30" uuid="cac48a61-66b2-4750-a85b-c4c81eb6d891"/>
+				<textFieldExpression><![CDATA[$F{extrato_data}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="300" y="90" width="100" height="30" uuid="fc8e90e0-2597-4457-8eb2-15f63eb7cd3e"/>
+				<text><![CDATA[Nome do Cliente:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="400" y="90" width="160" height="30" uuid="8d3bf0de-1cdb-4323-9019-0d236fa38b1e"/>
+				<textFieldExpression><![CDATA[$F{usuario_nome}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="300" y="120" width="100" height="30" uuid="a74d4fb3-cb8e-41b3-9428-af47494e8e90"/>
+				<text><![CDATA[Email do Cliente:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="400" y="120" width="160" height="30" uuid="ffc80f69-800d-4ebf-931e-5dcdc8273958"/>
+				<textFieldExpression><![CDATA[$F{usuario_email}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="0" y="160" width="560" height="1" uuid="ac5385a4-5ce1-4c1d-9466-8163a3da38e6"/>
+			</line>
+			<staticText>
+				<reportElement x="230" y="170" width="100" height="30" uuid="8be3fdc1-f2f0-4c0a-acbc-e577852e60aa"/>
+				<text><![CDATA[Operações]]></text>
+			</staticText>
+		</band>
+	</title>
+	<detail>
+		<band height="151" splitType="Stretch">
+			<staticText>
+				<reportElement x="0" y="0" width="100" height="30" uuid="72998940-2bd0-42e8-b652-01fa7fef9157"/>
+				<text><![CDATA[Nome:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="0" width="140" height="30" uuid="cff60d1c-5fdb-41a4-b394-cd98104fcfd9"/>
+				<textFieldExpression><![CDATA[$F{operacao_nome}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="260" y="0" width="100" height="90" uuid="b590bcdb-1283-4d25-a24c-4f0b373da7de"/>
+				<text><![CDATA[Descrição:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="360" y="0" width="200" height="90" uuid="68e9f3c3-be5a-4bd7-af0d-fc07d596c12c"/>
+				<textFieldExpression><![CDATA[$F{operacao_descricao}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="30" width="100" height="30" uuid="26be1168-ffd5-4ecf-8544-e5166068dbf4"/>
+<text><![CDATA[Valor: ]]></text>
+			</staticText>
+			<textField pattern="R$ #,##0.00">
+				<reportElement x="100" y="30" width="140" height="30" uuid="68c55662-1965-4be6-872e-462e8122ea4a"/>
+				<textFieldExpression><![CDATA[$F{operacao_valor}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="60" width="100" height="30" uuid="de23c152-4207-47d6-ac56-4e066acb2f81"/>
+				<text><![CDATA[Tipo:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="60" width="140" height="30" uuid="bb52cd22-4979-408a-867d-df622829c149"/>
+				<textFieldExpression><![CDATA[$F{operacao_tipo}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="90" width="100" height="30" uuid="f05181c8-83b5-46dd-8260-02406227809c"/>
+				<text><![CDATA[Categoria:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="100" y="90" width="140" height="30" uuid="d7e71f50-01f1-4529-a04f-e9c47461f7d0"/>
+				<textFieldExpression><![CDATA[$F{operacao_categoria}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="260" y="90" width="100" height="30" uuid="fee9e58b-d99f-4c17-beb9-e573858f8369"/>
+				<text><![CDATA[Data:]]></text>
+			</staticText>
+			<textField>
+				<reportElement x="360" y="90" width="200" height="30" uuid="f9386af5-de13-4cd2-917c-bac5cb0b6f9b"/>
+				<textFieldExpression><![CDATA[$F{operacao_data}]]></textFieldExpression>
+			</textField>
+			<line>
+				<reportElement x="7" y="130" width="560" height="1" uuid="5eb59e9d-0985-4d6f-800c-6615bfeda99e"/>
+			</line>
+		</band>
+	</detail>
+	<pageFooter>
+		<band height="52" splitType="Stretch">
+			<textField>
+				<reportElement x="370" y="10" width="100" height="30" uuid="6e8b570b-5298-49db-b527-1ffa4cb78f70"/>
+				<textElement textAlignment="Right"/>
+				<textFieldExpression><![CDATA["Page " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+			<textField evaluationTime="Report">
+				<reportElement x="470" y="10" width="100" height="30" uuid="14d90689-b9fb-4468-a20c-b3e12a75cfd9"/>
+				<textElement textAlignment="Left"/>
+				<textFieldExpression><![CDATA[" of " + $V{PAGE_NUMBER}]]></textFieldExpression>
+			</textField>
+		</band>
+	</pageFooter>
+	<summary>
+		<band height="138" splitType="Stretch">
+			<textField pattern="R$ #,##0.00">
+				<reportElement x="0" y="50" width="150" height="30" uuid="c94f4757-9676-426b-b775-f13c542d8fd7"/>
+				<textFieldExpression><![CDATA[$F{usuario_saldo_atual}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="20" width="150" height="30" uuid="a4d72535-5ddc-4781-afd1-9097e72c148b"/>
+				<text><![CDATA[Saldo atual:]]></text>
+			</staticText>
+			<staticText>
+				<reportElement x="212" y="20" width="130" height="30" uuid="a677d192-d351-4fb7-977f-b0890e6f448a"/>
+				<text><![CDATA[Entradas do mês:]]></text>
+			</staticText>
+			<textField pattern="R$ #,##0.00">
+				<reportElement x="212" y="50" width="130" height="30" uuid="4ef22d8e-f6f9-4d9b-9425-b4d090383161"/>
+				<textFieldExpression><![CDATA[$F{usuario_saldo_entrada}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="390" y="20" width="160" height="30" uuid="c571c2a3-06ee-4e1d-87e6-16fb10229012"/>
+				<text><![CDATA[Saídas do mês:]]></text>
+			</staticText>
+			<textField pattern="R$ #,##0.00">
+				<reportElement x="390" y="50" width="160" height="30" uuid="86ffda1b-26df-471a-b7b0-22e6114dec2f"/>
+				<textFieldExpression><![CDATA[$F{usuario_saldo_saida}]]></textFieldExpression>
+			</textField>
+			<staticText>
+				<reportElement x="0" y="108" width="100" height="30" uuid="be612541-dd2c-4048-b87c-a12639ad68a9"/>
+				<text><![CDATA[Data de Emissão:]]></text>
+			</staticText>
+			<textField pattern="MMMMM dd, yyyy">
+				<reportElement x="100" y="108" width="100" height="30" uuid="577133aa-1863-4e7f-8cb7-3013e609d88f"/>
+				<textFieldExpression><![CDATA[new java.util.Date()]]></textFieldExpression>
+			</textField>
+		</band>
+	</summary>
+</jasperReport>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Defina sua nova senha" />
+    <title>Redefinir senha | Gestão Financeira</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <script defer th:src="@{/webjars/htmx.org/2.0.4/dist/htmx.min.js}"></script>
+    <script defer th:src="@{/js/login.js}"></script>
+    <script defer th:src="@{/js/cadastro.js}"></script>
+    <script defer th:src="@{/js/password-toggle.js}"></script>
+  </head>
+  <body class="login-page">
+    <a class="auth-home-link" th:href="@{/}" aria-label="Voltar para a página inicial">← Voltar ao início</a>
+    <main class="login-shell">
+      <section class="login-card reset-card" aria-labelledby="reset-title">
+        <div class="auth-steps" aria-label="Etapa 3 de 3"><span class="done"></span><span class="done"></span><span class="active"></span></div>
+        <header class="login-header reset-header">
+          <span class="auth-flow-icon" aria-hidden="true">✓</span>
+          <p class="auth-kicker">Última etapa</p>
+          <h1 id="reset-title">Crie uma nova senha</h1>
+          <p>Escolha uma senha forte que você ainda não tenha usado.</p>
+        </header>
+
+        <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
+
+        <form class="login-form reset-form" th:action="@{/web-redefinir-senha}" method="post" hx-boost="true" data-loading-label="Salvando nova senha...">
+          <div class="field-group">
+            <label for="senha">Nova senha</label>
+            <input id="senha" name="senha" type="password" autocomplete="new-password" placeholder="••••••••" minlength="8" aria-describedby="password-requirements" required autofocus />
+            <div id="password-requirements" class="password-requirements" aria-live="polite">
+              <p>A senha deve conter:</p>
+              <ul>
+                <li data-requirement="lower">Letra minúscula</li>
+                <li data-requirement="upper">Letra maiúscula</li>
+                <li data-requirement="number">Número</li>
+                <li data-requirement="special">Caractere especial (!@#$%^&amp;*...)</li>
+                <li data-requirement="length">Mínimo 8 caracteres</li>
+              </ul>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label for="confirmarSenha">Confirme a nova senha</label>
+            <input id="confirmarSenha" name="confirmarSenha" type="password" autocomplete="new-password" placeholder="••••••••" minlength="8" aria-describedby="password-match" required />
+            <p id="password-match" class="password-match" aria-live="polite"></p>
+          </div>
+
+          <button class="submit-button reset-submit" type="submit">
+            <span data-submit-label>Salvar nova senha</span>
+            <span class="spinner" data-spinner hidden aria-hidden="true"></span>
+          </button>
+
+          <a class="back-to-login" th:href="@{/login}">← Voltar para o login</a>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

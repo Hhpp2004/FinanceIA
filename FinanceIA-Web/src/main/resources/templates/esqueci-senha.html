@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Recupere sua senha do Gestão Financeira" />
+    <title>Esqueci a senha | Gestão Financeira</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <script defer th:src="@{/webjars/htmx.org/2.0.4/dist/htmx.min.js}"></script>
+    <script defer th:src="@{/js/login.js}"></script>
+  </head>
+  <body class="login-page">
+    <a class="auth-home-link" th:href="@{/}" aria-label="Voltar para a página inicial">← Voltar ao início</a>
+    <main class="login-shell">
+      <section class="login-card recovery-card" aria-labelledby="recovery-title">
+        <header class="login-header recovery-header">
+          <span class="auth-flow-icon" aria-hidden="true">✉</span>
+          <p class="auth-kicker">Recuperação de acesso</p>
+          <h1 id="recovery-title">Esqueceu sua senha?</h1>
+          <p>Informe seu e-mail e enviaremos um código de segurança.</p>
+        </header>
+
+        <div class="alert alert-success" role="status" th:if="${param.sent}">
+          Se o e-mail estiver cadastrado, você receberá um código de recuperação.
+        </div>
+        <div class="alert alert-error" role="alert" th:if="${param.expired}">
+          A autorização expirou. Solicite um novo código.
+        </div>
+
+        <form class="login-form recovery-form" th:action="@{/web-esqueci-senha}" method="post" hx-boost="true" data-loading-label="Enviando código...">
+          <div class="field-group">
+            <label for="email">E-mail da sua conta</label>
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="seu@email.com" required autofocus />
+          </div>
+
+          <button class="submit-button recovery-submit" type="submit">
+            <span data-submit-label>Enviar código</span>
+            <span class="spinner" data-spinner hidden aria-hidden="true"></span>
+          </button>
+
+          <a class="back-to-login" th:href="@{/login}">← Voltar para o login</a>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

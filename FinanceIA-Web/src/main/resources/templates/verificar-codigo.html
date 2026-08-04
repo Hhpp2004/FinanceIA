@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Verifique seu código de recuperação" />
+    <title>Verificar código | Gestão Financeira</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <script defer th:src="@{/webjars/htmx.org/2.0.4/dist/htmx.min.js}"></script>
+    <script defer th:src="@{/js/login.js}"></script>
+  </head>
+  <body class="login-page">
+    <a class="auth-home-link" th:href="@{/}" aria-label="Voltar para a página inicial">← Voltar ao início</a>
+    <main class="login-shell">
+      <section class="login-card verification-card" aria-labelledby="verification-title">
+        <div class="auth-steps" aria-label="Etapa 2 de 3"><span class="done"></span><span class="active"></span><span></span></div>
+        <header class="login-header verification-header">
+          <span class="auth-flow-icon code-icon" aria-hidden="true">#</span>
+          <p class="auth-kicker">Etapa 2 de 3</p>
+          <h1 id="verification-title">Confirme o código</h1>
+          <p>Digite os seis números que enviamos para você.</p>
+        </header>
+
+        <div class="code-sent-message" role="status">
+          <p>Código enviado para</p>
+          <strong th:text="${email}">seu@email.com</strong>
+          <p>Confira também sua pasta de spam.</p>
+        </div>
+
+        <div class="alert alert-error verification-alert" role="alert" th:if="${error}" th:text="${error}"></div>
+        <div class="alert alert-success verification-alert" role="status" th:if="${success}" th:text="${success}"></div>
+
+        <form class="login-form verification-form" th:action="@{/web-verificar-codigo}" method="post" hx-boost="true" data-loading-label="Verificando...">
+          <input type="hidden" name="email" th:value="${email}" />
+          <div class="field-group">
+            <label for="codigo">Código de recuperação</label>
+            <input id="codigo" name="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" pattern="[0-9]{6}" minlength="6" maxlength="6" required autofocus />
+          </div>
+
+          <button class="submit-button" type="submit">
+            <span data-submit-label>Verificar código</span>
+            <span class="spinner" data-spinner hidden aria-hidden="true"></span>
+          </button>
+
+          <a class="back-to-login" th:href="@{/esqueci-senha}">Não recebeu? Solicitar novo código</a>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>
