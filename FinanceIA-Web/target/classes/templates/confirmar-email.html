@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="Confirme seu endereço de e-mail" />
+    <title>Confirmar e-mail | Gestão Financeira</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}" />
+    <script defer th:src="@{/webjars/htmx.org/2.0.4/dist/htmx.min.js}"></script>
+    <script defer th:src="@{/js/login.js}"></script>
+  </head>
+  <body class="login-page">
+    <a class="auth-home-link" th:href="@{/}" aria-label="Voltar para a página inicial">← Voltar ao início</a>
+    <main class="login-shell">
+      <section class="login-card verification-card" aria-labelledby="confirmation-title">
+        <header class="login-header verification-header">
+          <span class="auth-flow-icon code-icon" aria-hidden="true">#</span>
+          <p class="auth-kicker">Só falta confirmar</p>
+          <h1 id="confirmation-title">Confirme seu e-mail</h1>
+          <p>Digite os seis números que enviamos para ativar sua conta.</p>
+        </header>
+
+        <div class="code-sent-message" role="status">
+          <p>Código enviado para</p>
+          <strong th:text="${email}">seu@email.com</strong>
+          <p>O código é válido por 10 minutos.</p>
+        </div>
+
+        <div class="alert alert-error verification-alert" role="alert" th:if="${error}" th:text="${error}"></div>
+
+        <form class="login-form verification-form" th:action="@{/web-confirmar-email}" method="post" hx-boost="true" data-loading-label="Confirmando...">
+          <input type="hidden" name="email" th:value="${email}" />
+          <div class="field-group">
+            <label for="codigo">Código de confirmação</label>
+            <input id="codigo" name="codigo" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="123456" pattern="[0-9]{6}" minlength="6" maxlength="6" required autofocus />
+          </div>
+
+          <button class="submit-button" type="submit">
+            <span data-submit-label>Confirmar e-mail</span>
+            <span class="spinner" data-spinner hidden aria-hidden="true"></span>
+          </button>
+
+          <a class="back-to-login" th:href="@{/login}">← Voltar para o login</a>
+        </form>
+      </section>
+    </main>
+  </body>
+</html>

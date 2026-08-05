@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex">
+    <title th:text="${'Erro ' + (status ?: 500) + ' | Gestão Financeira'}">Erro | Gestão Financeira</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="error-page">
+    <header class="error-header">
+        <a class="header-brand" th:href="@{/}">Gestão Financeira</a>
+    </header>
+
+    <main class="error-main">
+
+        <section class="error-card" aria-labelledby="error-title" th:switch="${status}">
+            <div class="error-art" aria-hidden="true"><span class="error-orbit"></span><span class="error-symbol" th:text="${status ?: 500}">500</span></div>
+
+            <div th:case="400">
+                <p class="error-kicker">Solicitação inválida</p>
+                <h1 id="error-title">Não conseguimos processar esta solicitação.</h1>
+                <p>Confira as informações enviadas e tente novamente.</p>
+            </div>
+            <div th:case="403">
+                <p class="error-kicker">Acesso não autorizado</p>
+                <h1 id="error-title">Você não tem permissão para acessar esta página.</h1>
+                <p>Entre com uma conta autorizada ou volte para um local seguro.</p>
+            </div>
+            <div th:case="404">
+                <p class="error-kicker">Página não encontrada</p>
+                <h1 id="error-title">Parece que esta página não existe.</h1>
+                <p>Ela pode ter sido movida, removida ou o endereço pode estar incorreto.</p>
+            </div>
+            <div th:case="429">
+                <p class="error-kicker">Muitas tentativas</p>
+                <h1 id="error-title">Vamos com calma por um instante.</h1>
+                <p>Você fez muitas solicitações em pouco tempo. Aguarde um minuto e tente novamente.</p>
+            </div>
+            <div th:case="*">
+                <p class="error-kicker">Erro interno</p>
+                <h1 id="error-title">Algo inesperado aconteceu.</h1>
+                <p>Nossa equipe já pode investigar o problema. Tente novamente em alguns instantes.</p>
+            </div>
+
+            <div class="error-actions">
+                <a class="error-primary-action" th:href="@{/}">Ir para o início</a>
+                <a class="error-secondary-action" th:href="@{/login}">Voltar para o login</a>
+            </div>
+        </section>
+
+        <p class="error-code">Código do erro: <strong th:text="${status ?: 500}">500</strong></p>
+    </main>
+</body>
+</html>

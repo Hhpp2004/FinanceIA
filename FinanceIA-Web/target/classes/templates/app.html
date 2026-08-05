@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Início | Gestão Financeira</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script defer th:src="@{/js/app.js}"></script>
+</head>
+<body class="dashboard-page">
+    <div class="dashboard-scroll-progress" aria-hidden="true"><span></span></div>
+    <div class="drawer-backdrop" data-drawer-backdrop hidden></div>
+    <aside class="app-drawer" id="app-drawer" aria-label="Menu principal" aria-hidden="true">
+        <div class="drawer-brand">
+            <span class="brand-mark">GF</span>
+            <div><strong>Gestão Financeira</strong><small>Seu dinheiro, sob controle</small></div>
+        </div>
+        <nav class="drawer-nav" aria-label="Operações e extratos">
+            <a class="new-operation-button" href="/nova-operacao">
+                <span aria-hidden="true">＋</span>
+                Cadastrar operação
+            </a>
+            <div class="drawer-statements">
+                <div class="statements-heading">
+                    <span>Extratos</span>
+                    <small th:text="${#lists.size(extratos)}">0</small>
+                </div>
+                <div class="statements-list">
+                    <a th:each="extrato : ${extratos}"
+                       th:href="@{/extratos/{id}(id=${extrato.id})}"
+                       th:title="'Abrir extrato de ' + ${#strings.replace(extrato.nome, ' / ', ' de ')}">
+                        <span class="statement-icon" aria-hidden="true">▤</span>
+                        <span class="statement-copy">
+                            <strong th:text="${#strings.replace(extrato.nome, ' / ', ' de ')}">Julho de 2026</strong>
+                            <small>Extrato mensal</small>
+                        </span>
+                        <span class="statement-arrow" aria-hidden="true">›</span>
+                    </a>
+                    <p class="empty-statements" th:if="${#lists.isEmpty(extratos)}">Nenhum extrato disponível.</p>
+                </div>
+            </div>
+        </nav>
+        <div class="drawer-user">
+            <span class="avatar" th:text="${#strings.substring(nome, 0, 1).toUpperCase()}">U</span>
+            <div><strong th:text="${nome}">Usuário</strong><small th:text="${email}">email</small></div>
+        </div>
+        <form th:action="@{/logout}" method="post"><button class="logout-button" type="submit">Sair da conta</button></form>
+    </aside>
+
+    <header class="dashboard-header">
+        <button class="icon-button" type="button" data-drawer-toggle aria-controls="app-drawer" aria-expanded="false" aria-label="Abrir menu">
+            <span></span><span></span><span></span>
+        </button>
+        <a class="header-brand" href="/app">Gestão Financeira</a>
+        <a class="icon-button settings-button" href="/configuracoes" aria-label="Configurações da conta" title="Configurações da conta">
+            <span class="header-avatar" th:text="${#strings.substring(nome, 0, 1).toUpperCase()}">U</span>
+        </a>
+    </header>
+
+    <main class="dashboard-main">
+        <section class="dashboard-intro">
+            <div class="intro-copy"><p class="eyebrow">Visão geral</p><h1>Olá, <span th:text="${nome}">Usuário</span>!</h1><p>Veja como estão suas finanças em <span th:text="${mesAtual}">Julho de 2026</span>.</p></div>
+            <div class="intro-icon" aria-hidden="true">
+                <svg viewBox="0 0 64 64" role="img">
+                    <path d="M14 49V28m12 21V20m12 29V32m12 17V13"/>
+                    <path d="m11 20 14-9 13 9L52 8"/>
+                    <path d="M44 8h8v8"/>
+                </svg>
+            </div>
+        </section>
+
+        <section class="market-card" aria-labelledby="market-card-title" data-market-card>
+            <div class="market-card-heading">
+                <div><p class="eyebrow">Mercado hoje</p><h2 id="market-card-title">Destaques da bolsa</h2></div>
+                <span class="market-status" data-market-status th:text="${mercadoDisponivel} ? 'Atualizado agora' : 'Dados indisponíveis'">Atualização pendente</span>
+            </div>
+            <form class="market-search" data-market-search-form role="search">
+                <label class="sr-only" for="market-search-input">Pesquisar ações e fundos imobiliários</label>
+                <span aria-hidden="true">⌕</span>
+                <input id="market-search-input" type="search" name="termo"
+                       placeholder="Pesquise por código ou nome, ex.: PETR4 ou MXRF11"
+                       minlength="2" maxlength="50" autocomplete="off"
+                       aria-controls="market-search-results">
+                <button type="submit">Pesquisar</button>
+            </form>
+            <div class="market-search-panel" id="market-search-results" data-market-search-panel hidden>
+                <div class="market-search-heading">
+                    <strong>Resultados da pesquisa</strong>
+                    <small data-market-search-status aria-live="polite"></small>
+                </div>
+                <div class="market-search-results" data-market-search-results></div>
+            </div>
+            <div class="market-columns">
+                <section class="market-column market-gainers" aria-labelledby="market-gainers-title">
+                    <div class="market-column-heading"><span class="market-direction" aria-hidden="true">↗</span><div><h3 id="market-gainers-title">Maiores altas</h3><small>Top 5 do dia</small></div></div>
+                    <div class="market-list" data-market-gainers-list aria-live="polite">
+                        <a class="market-row" th:each="acao : ${maioresAltas}"
+                           th:href="@{/acoes/{codigo}(codigo=${acao.stock})}"
+                           th:aria-label="'Ver todos os dados de ' + ${acao.stock}">
+                            <div class="market-symbol"><span><img th:if="${acao.logo != null and !#strings.isEmpty(acao.logo)}" th:src="${acao.logo}" alt="" loading="lazy"><span th:unless="${acao.logo != null and !#strings.isEmpty(acao.logo)}" th:text="${#strings.substring(acao.stock, 0, 1)}">A</span></span><div><strong th:text="${acao.stock}">ABCD3</strong><small th:text="${acao.name}">Empresa</small></div></div>
+                            <div class="market-quote"><strong th:text="${#numbers.formatCurrency(acao.close)}">R$ 0,00</strong><span th:text="${(acao.change >= 0 ? '+' : '') + #numbers.formatDecimal(acao.change, 1, 2) + '%'}">+0,00%</span></div>
+                        </a>
+                        <p class="market-empty" data-market-empty th:if="${#lists.isEmpty(maioresAltas)}">Nenhuma alta disponível neste momento.</p>
+                    </div>
+                </section>
+                <section class="market-column market-losers" aria-labelledby="market-losers-title">
+                    <div class="market-column-heading"><span class="market-direction" aria-hidden="true">↘</span><div><h3 id="market-losers-title">Maiores baixas</h3><small>Top 5 do dia</small></div></div>
+                    <div class="market-list" data-market-losers-list aria-live="polite">
+                        <a class="market-row" th:each="acao : ${maioresBaixas}"
+                           th:href="@{/acoes/{codigo}(codigo=${acao.stock})}"
+                           th:aria-label="'Ver todos os dados de ' + ${acao.stock}">
+                            <div class="market-symbol"><span><img th:if="${acao.logo != null and !#strings.isEmpty(acao.logo)}" th:src="${acao.logo}" alt="" loading="lazy"><span th:unless="${acao.logo != null and !#strings.isEmpty(acao.logo)}" th:text="${#strings.substring(acao.stock, 0, 1)}">A</span></span><div><strong th:text="${acao.stock}">ABCD3</strong><small th:text="${acao.name}">Empresa</small></div></div>
+                            <div class="market-quote"><strong th:text="${#numbers.formatCurrency(acao.close)}">R$ 0,00</strong><span th:text="${#numbers.formatDecimal(acao.change, 1, 2) + '%'}">-0,00%</span></div>
+                        </a>
+                        <p class="market-empty" data-market-empty th:if="${#lists.isEmpty(maioresBaixas)}">Nenhuma baixa disponível neste momento.</p>
+                    </div>
+                </section>
+            </div>
+        </section>
+
+        <template data-market-row-template>
+            <a class="market-row" href="#">
+                <div class="market-symbol"><span data-market-logo></span><div><strong data-market-ticker>ABCD3</strong><small data-market-name>Empresa</small></div></div>
+                <div class="market-quote"><strong data-market-price>R$ 0,00</strong><span data-market-change>0,00%</span></div>
+            </a>
+        </template>
+
+        <section class="summary-grid" aria-label="Resumo financeiro do mês">
+            <article class="summary-card balance" th:classappend="${saldo.saldoAtual < 0} ? 'balance-negative' : (${saldo.saldoAtual > 0} ? 'balance-positive' : 'balance-zero')"><div class="summary-icon">$</div><div><p>Saldo atual</p><strong data-current-balance th:attr="data-balance-value=${saldo.saldoAtual}" th:text="${#numbers.formatCurrency(saldo.saldoAtual)}">R$ 0,00</strong></div></article>
+            <article class="summary-card income"><div class="summary-icon">↗</div><div><p>Entradas no mês</p><strong th:text="${#numbers.formatCurrency(saldo.saldoEntrada)}">R$ 0,00</strong></div></article>
+            <article class="summary-card expense"><div class="summary-icon">↘</div><div><p>Saídas no mês</p><strong th:text="${#numbers.formatCurrency(saldo.saldoSaida)}">R$ 0,00</strong></div></article>
+        </section>
+
+        <section class="chart-card" aria-labelledby="chart-title" data-chart-stage>
+            <div class="card-heading"><div><p class="eyebrow">Distribuição</p><h2 id="chart-title">Gastos por categoria</h2></div><span class="month-chip" th:text="${mesAtual}">Julho de 2026</span></div>
+            <div class="chart-content">
+                <div class="chart-wrap">
+                    <div class="zero-donut" th:if="${semGastos}" aria-hidden="true"></div>
+                    <canvas id="category-chart" width="460" height="460" aria-label="Gráfico de gastos por categoria"></canvas>
+                    <div class="chart-center"><small>Total de saídas</small><strong data-chart-total th:text="${#numbers.formatCurrency(saldo.saldoSaida)}">R$ 0,00</strong></div>
+                    <div class="chart-tooltip" data-chart-tooltip hidden></div>
+                </div>
+                <div class="chart-legend" data-chart-legend>
+                    <div class="legend-row" th:each="categoria, status : ${categorias}">
+                        <span class="legend-color" th:classappend="' legend-color-' + ${status.index}"></span>
+                        <span th:text="${categoria.nome}">Categoria</span>
+                        <strong th:text="${#numbers.formatCurrency(gastosPorCategoria[categoria.name()])}">R$ 0,00</strong>
+                    </div>
+                </div>
+            </div>
+            <p class="empty-chart" data-empty-chart hidden>Você ainda não registrou saídas neste mês.</p>
+        </section>
+    </main>
+    <script th:inline="javascript">window.categoryData = /*[[${gastosPorCategoria}]]*/ {};</script>
+</body>
+</html>

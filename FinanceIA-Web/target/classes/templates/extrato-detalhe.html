@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="'Extrato - ' + ${tituloExtrato} + ' | Gestão Financeira'">Extrato | Gestão Financeira</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="statement-page">
+    <header class="statement-header">
+        <a href="/app"><span aria-hidden="true">←</span> Voltar</a>
+        <h1>Extrato - <span th:text="${tituloExtrato}">Julho de 2026</span></h1>
+    </header>
+
+    <main class="statement-main">
+        <section class="statement-summary" aria-label="Resumo do extrato">
+            <article><span>Total Entradas</span><strong class="statement-income" th:text="${#numbers.formatCurrency(extrato.saldo.saldoEntrada)}">R$ 0,00</strong></article>
+            <article><span>Total Saídas</span><strong class="statement-expense" th:text="${#numbers.formatCurrency(extrato.saldo.saldoSaida)}">R$ 0,00</strong></article>
+            <article><span>Saldo do Mês</span><strong class="statement-balance" th:text="${#numbers.formatCurrency(extrato.saldo.saldoAtual)}">R$ 0,00</strong></article>
+        </section>
+
+        <section class="transactions-card" aria-labelledby="transactions-title">
+            <h2 id="transactions-title">Transações</h2>
+            <div class="transactions-list">
+                <a class="transaction-row" th:each="operacao : ${operacoes}"
+                   th:href="@{/extratos/{extratoId}/operacoes/{operacaoId}(extratoId=${extrato.id},operacaoId=${operacao.id})}"
+                   th:classappend="${operacao.tipo.name() == 'ENTRADA'} ? ' transaction-income' : ' transaction-expense'">
+                    <span class="transaction-icon" aria-hidden="true" th:text="${operacao.tipo.name() == 'ENTRADA'} ? '↑' : '↓'">↓</span>
+                    <div class="transaction-info">
+                        <strong th:text="${operacao.nome}">Supermercado</strong>
+                        <small><span th:text="${operacao.categoria}">Alimentação</span> • <span th:text="${operacao.data}">11/07/2026</span></small>
+                    </div>
+                    <strong class="transaction-value">
+                        <span th:text="${operacao.tipo.name() == 'ENTRADA'} ? '+' : '-'">-</span><span th:text="${#numbers.formatCurrency(T(java.lang.Math).abs(operacao.valor))}">R$ 0,00</span>
+                    </strong>
+                    <span class="transaction-open" aria-hidden="true">›</span>
+                </a>
+                <p class="empty-transactions" th:if="${#lists.isEmpty(operacoes)}">Nenhuma transação registrada neste extrato.</p>
+            </div>
+        </section>
+
+        <aside class="report-success" th:if="${param.relatorioEnviado}" role="status"
+               aria-live="polite" data-report-notification>
+            <span class="report-success-icon" aria-hidden="true">✓</span>
+            <div>
+                <strong>Relatório enviado!</strong>
+                <p>O PDF foi enviado com sucesso para o seu e-mail.</p>
+            </div>
+            <button type="button" aria-label="Fechar notificação" data-close-notification>×</button>
+        </aside>
+        <form th:action="@{/extratos/{id}/relatorio-email(id=${extrato.id})}" method="post">
+            <button class="pdf-report-button" type="submit">
+                <span aria-hidden="true">✉</span> Enviar relatório por e-mail
+            </button>
+        </form>
+    </main>
+    <script>
+        const notification = document.querySelector('[data-report-notification]');
+        if (notification) {
+            const closeNotification = () => notification.remove();
+            notification.querySelector('[data-close-notification]').addEventListener('click', closeNotification);
+            window.setTimeout(closeNotification, 6000);
+        }
+    </script>
+</body>
+</html>

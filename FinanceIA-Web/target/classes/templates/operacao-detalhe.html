@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${operacao.nome} + ' | Gestão Financeira'">Detalhes da operação</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+<body class="operation-detail-page">
+    <header class="statement-header">
+        <a th:href="@{/extratos/{id}(id=${extrato.id})}"><span aria-hidden="true">←</span> Voltar</a>
+        <h1>Detalhes da Operação</h1>
+    </header>
+
+    <main class="operation-detail-main">
+        <section class="operation-detail-card" th:classappend="${operacao.tipo.name() == 'ENTRADA'} ? ' detail-income' : ' detail-expense'">
+            <div class="detail-title">
+                <span class="detail-icon" aria-hidden="true" th:text="${operacao.tipo.name() == 'ENTRADA'} ? '↑' : '↓'">↓</span>
+                <div>
+                    <small th:text="${operacao.tipo.nome}">Saída</small>
+                    <h2 th:text="${operacao.nome}">Supermercado</h2>
+                </div>
+            </div>
+
+            <strong class="detail-value">
+                <span th:text="${operacao.tipo.name() == 'ENTRADA'} ? '+' : '-'">-</span><span th:text="${#numbers.formatCurrency(T(java.lang.Math).abs(operacao.valor))}">R$ 0,00</span>
+            </strong>
+
+            <dl class="operation-details">
+                <div><dt>Categoria</dt><dd th:text="${categoriaOperacao}">Alimentação</dd></div>
+                <div><dt>Data</dt><dd th:text="${dataOperacao}">11/07/2026</dd></div>
+                <div><dt>Horário</dt><dd th:text="${horaOperacao}">20:30</dd></div>
+                <div><dt>Tipo</dt><dd th:text="${operacao.tipo.nome}">Saída</dd></div>
+                <div class="detail-description"><dt>Descrição</dt><dd th:text="${#strings.isEmpty(operacao.descricao) ? '—' : operacao.descricao}">Descrição da operação</dd></div>
+            </dl>
+        </section>
+    </main>
+</body>
+</html>

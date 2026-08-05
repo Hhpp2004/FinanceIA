@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Adicionar transação | Gestão Financeira</title>
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+    <script defer th:src="@{/js/nova-operacao.js}"></script>
+</head>
+<body class="operation-page">
+    <header class="operation-header">
+        <a href="/app" aria-label="Voltar para o painel"><span aria-hidden="true">←</span> Voltar</a>
+        <h1>Adicionar Transação</h1>
+    </header>
+
+    <main class="operation-main">
+        <section class="operation-card" aria-labelledby="operation-title">
+            <h2 id="operation-title">Nova Transação</h2>
+            <p class="operation-error" th:if="${error}" th:text="${error}"></p>
+            <form class="operation-form" th:action="@{/web-operacao}" method="post" data-operation-form>
+                <div class="operation-field">
+                    <label for="valor">Valor (R$)</label>
+                    <input id="valor" name="valor" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="0,00" required>
+                </div>
+                <div class="operation-field">
+                    <label for="nome">Nome</label>
+                    <input id="nome" name="nome" type="text" maxlength="100" placeholder="Ex: Supermercado" required>
+                </div>
+                <div class="operation-field">
+                    <label for="descricao">Descrição</label>
+                    <textarea id="descricao" name="descricao" maxlength="255" rows="4"
+                              placeholder="Ex: Compras do mês" required></textarea>
+                </div>
+                <div class="operation-field">
+                    <label for="data">Data</label>
+                    <input id="data" name="data" type="date" required>
+                </div>
+
+                <fieldset class="choice-fieldset transaction-types">
+                    <legend>Tipo de Transação</legend>
+                    <label class="type-choice income-choice">
+                        <input type="radio" name="tipo" value="ENTRADA" required>
+                        <span class="choice-icon" aria-hidden="true">↑</span>
+                        <strong>Entrada</strong>
+                    </label>
+                    <label class="type-choice expense-choice">
+                        <input type="radio" name="tipo" value="SAIDA" required>
+                        <span class="choice-icon" aria-hidden="true">↓</span>
+                        <strong>Saída</strong>
+                    </label>
+                </fieldset>
+
+                <fieldset class="choice-fieldset category-choices" data-categories hidden>
+                    <legend>Categoria</legend>
+                    <label><input type="radio" name="categoria" value="MORADIA"><span>Moradia</span></label>
+                    <label><input type="radio" name="categoria" value="TRANSPORTE"><span>Transporte</span></label>
+                    <label><input type="radio" name="categoria" value="INVESTIMENTOS"><span>Investimentos</span></label>
+                    <label><input type="radio" name="categoria" value="LAZER"><span>Lazer</span></label>
+                    <label><input type="radio" name="categoria" value="SAUDE"><span>Saúde</span></label>
+                    <label><input type="radio" name="categoria" value="OUTROS"><span>Outros</span></label>
+                    <label><input type="radio" name="categoria" value="IMPOSTOS"><span>Impostos</span></label>
+                    <label><input type="radio" name="categoria" value="ALIMENTACAO"><span>Alimentação</span></label>
+                </fieldset>
+
+                <button class="operation-submit" type="submit">Adicionar</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

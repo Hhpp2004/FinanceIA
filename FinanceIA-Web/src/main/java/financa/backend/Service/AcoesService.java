@@ -77,6 +77,7 @@ public class AcoesService {
 
     public Acoes getAcaoPorCodigo(String codigo) throws Exception {
         String codigoNormalizado = codigo == null ? "" : codigo.trim().toUpperCase();
+
         if (!codigoNormalizado.matches("[A-Z0-9]{4,12}")) {
             throw new IllegalArgumentException("Código de ação inválido");
         }
@@ -101,6 +102,7 @@ public class AcoesService {
 
     private List<Acoes> getAcoesPorVariacao(String ordem) throws Exception {
         URI endpoint = URI.create(url + "/list?type=stock&sortBy=change&sortOrder=" + ordem + "&limit=5");
+
         HttpRequest.Builder requestBuilder = HttpRequest.newBuilder()
                 .uri(endpoint)
                 .timeout(Duration.ofSeconds(15))
@@ -131,7 +133,9 @@ public class AcoesService {
         switch (response.statusCode()) {
             case 401 -> throw new IllegalStateException("BRAPI_AUTH");
             case 403 -> throw new IllegalStateException("BRAPI_FORBIDDEN");
-            case 404 -> throw new IllegalArgumentException("Ação não encontrada");
+            case 404 -> {
+                throw new IllegalArgumentException("Ação não encontrada");
+            }
             case 429 -> throw new IllegalStateException("BRAPI_LIMIT");
             default -> {
                 if (response.statusCode() < 200 || response.statusCode() >= 300) {
