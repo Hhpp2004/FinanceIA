@@ -1,13 +1,13 @@
 services:
   dbEmail:
-    image: postgres:15-alpine
+    image: postgres:16
     container_name: emailDB
     environment:
       POSTGRES_DB: emailDB
       POSTGRES_USER: ${USERNAME_DB}
       POSTGRES_PASSWORD: ${PASSWORD_DB}
     ports:
-      - "5434:5432"
+      - "5433:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
