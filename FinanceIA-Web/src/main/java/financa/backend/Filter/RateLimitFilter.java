@@ -54,7 +54,13 @@ public class RateLimitFilter extends OncePerRequestFilter {
         if(isAuthentication != null && isAuthentication.isAuthenticated() && !(isAuthentication instanceof AnonymousAuthenticationToken)){
             key = isAuthentication.getName();
         } else {
-            key = request.getRemoteAddr();
+            // In production every request arrives from Caddy. Use the client IP
+            // explicitly forwarded by that trusted reverse proxy so visitors do
+            // not share one rate-limit bucket.
+            String forwardedClientIp = request.getHeader("X-Real-IP");
+            key = forwardedClientIp == null || forwardedClientIp.isBlank()
+                    ? request.getRemoteAddr()
+                    : forwardedClientIp.trim();
         }
         Bandwidth bandwidth;
         String uri = request.getRequestURI();

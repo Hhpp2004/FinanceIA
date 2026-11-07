@@ -28,7 +28,7 @@
 
         <div class="alert alert-error verification-alert" role="alert" th:if="${error}" th:text="${error}"></div>
 
-        <form class="login-form verification-form" th:action="@{/web-confirmar-email}" method="post" hx-boost="true" data-loading-label="Confirmando...">
+        <form class="login-form verification-form" th:action="@{/web-confirmar-email}" method="post" data-loading-label="Confirmando...">
           <input type="hidden" name="email" th:value="${email}" />
           <div class="field-group">
             <label for="codigo">Código de confirmação</label>

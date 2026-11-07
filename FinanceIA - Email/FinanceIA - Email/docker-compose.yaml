@@ -4,10 +4,10 @@ services:
     container_name: emailDB
     environment:
       POSTGRES_DB: emailDB
-      POSTGRES_USER: ${USERNAME_DB}
-      POSTGRES_PASSWORD: ${PASSWORD_DB}
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
 

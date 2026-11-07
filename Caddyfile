@@ -1,0 +1,9 @@
+http://localhost:80 {
+	reverse_proxy financeia-web:8080
+}
+
+financeia.ddns.net {
+	reverse_proxy financeia-web:8080 {
+		header_up X-Real-IP {remote_host}
+	}
+}

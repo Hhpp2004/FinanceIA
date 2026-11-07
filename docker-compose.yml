@@ -1,0 +1,69 @@
+services:
+    proxy:
+        image: caddy:2
+        ports: ["80:80", "443:443"]
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile
+            - caddy_data:/data
+        networks: [frontend]
+        depends_on: [financeia-web]
+        restart: unless-stopped
+
+    financeia-web:
+        build: ./FinanceIA-Web
+        env_file: ./FinanceIA-Web/.env
+        networks: [frontend, backend]
+        depends_on:
+            db: { condition: service_healthy}
+        restart: unless-stopped
+
+    financeia-email:
+        build: "./FinanceIA - Email/FinanceIA - Email"
+        env_file: "./FinanceIA - Email/FinanceIA - Email/.env"
+        networks: [backend]
+        depends_on:
+            dbEmail: {condition: service_healthy}
+        restart: unless-stopped
+
+    db:
+        image: postgres:16
+        container_name: financeDB
+        ports:
+          - "127.0.0.1:5433:5432"
+        environment:
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+            POSTGRES_USER: ${DB_USERNAME}
+            POSTGRES_DB: financas
+        volumes: [db_web_data:/var/lib/postgresql/data]
+        networks: [backend]
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+            interval: 10s
+            retries: 5
+        restart: unless-stopped
+
+    dbEmail:
+        image: postgres:16
+        container_name: dbEmail
+        ports:
+          - "127.0.0.1:5434:5432"
+        environment:
+            POSTGRES_DB: emailDB
+            POSTGRES_USER: ${DB_USERNAME}
+            POSTGRES_PASSWORD: ${DB_PASSWORD}
+        volumes: [db_email_data:/var/lib/postgresql/data]
+        networks: [backend]
+        healthcheck:
+            test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+            interval: 10s
+            retries: 5
+        restart: unless-stopped
+
+networks:
+    frontend:
+    backend:
+
+volumes:
+    caddy_data:
+    db_web_data:
+    db_email_data:

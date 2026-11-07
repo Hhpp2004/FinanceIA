@@ -38,7 +38,7 @@
 
         <div class="alert alert-error" role="alert" th:if="${error}" th:text="${error}"></div>
 
-        <form class="login-form registration-form" th:action="@{/web-cadastro}" method="post" hx-boost="true" data-loading-label="Criando conta...">
+        <form class="login-form registration-form" th:action="@{/web-cadastro}" method="post" data-loading-label="Criando conta...">
           <div class="field-group">
             <label for="nome">Nome</label>
             <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Seu nome completo" required autofocus />
