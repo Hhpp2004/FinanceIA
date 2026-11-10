@@ -2,6 +2,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const progressBar = document.querySelector(".dashboard-scroll-progress span");
     const chartStage = document.querySelector("[data-chart-stage]");
+    const marketCard = document.querySelector("[data-market-card]");
+    const dashboardMain = document.querySelector(".dashboard-main");
+    const dashboardHeader = document.querySelector(".dashboard-header");
+    const summaryGrid = document.querySelector(".summary-grid");
     const balanceCard = document.querySelector(".summary-card.balance");
     const currentBalance = document.querySelector("[data-current-balance]");
 
@@ -191,16 +195,43 @@ document.addEventListener("DOMContentLoaded", () => {
     };
     const clamp = (value, min = 0, max = 1) => Math.min(Math.max(value, min), max);
     let ticking = false;
+    let focusLayout = false;
+    let focusCentered = false;
+    let lastScrollY = window.scrollY;
+
+    const setFocusLayout = (focused) => {
+        if (!marketCard || focused === focusLayout) return;
+        if (focused && marketCard.contains(document.activeElement)) return;
+        focusLayout = focused;
+        focusCentered = false;
+        if (!focused) dashboardMain?.style.setProperty("--dashboard-focus-shift", "0px");
+        document.body.classList.toggle("dashboard-focus-layout", focused);
+        lastScrollY = window.scrollY;
+    };
+
+    const updateFocusLayoutFromScroll = () => {
+        const currentScrollY = window.scrollY;
+        const scrollDelta = currentScrollY - lastScrollY;
+        if (scrollDelta < -1) setFocusLayout(false);
+        else if (scrollDelta > 1 && chartStage.getBoundingClientRect().top < window.innerHeight * .92) {
+            setFocusLayout(true);
+        }
+        lastScrollY = window.scrollY;
+    };
 
     const renderScrollScene = () => {
+        const chartTop = chartStage.getBoundingClientRect().top;
+        const focusTrigger = window.innerHeight * .92;
+        if (!focusLayout && chartTop < focusTrigger) setFocusLayout(true);
+        else if (focusLayout && chartTop > focusTrigger) setFocusLayout(false);
         const viewportHeight = window.innerHeight;
         const maxScroll = Math.max(document.documentElement.scrollHeight - viewportHeight, 1);
-        const chartTop = chartStage.getBoundingClientRect().top;
+        const updatedChartTop = chartStage.getBoundingClientRect().top;
         const scrollProgress = clamp(window.scrollY / maxScroll);
         const reachedScrollEnd = window.scrollY >= maxScroll - 1;
         chartProgress = reduceMotion || reachedScrollEnd
             ? 1
-            : clamp((viewportHeight * .94 - chartTop) / (viewportHeight * .62));
+            : clamp((viewportHeight * .94 - updatedChartTop) / (viewportHeight * .62));
         const smoothProgress = chartProgress * chartProgress * (3 - 2 * chartProgress);
 
         if (progressBar) {
@@ -213,6 +244,19 @@ document.addEventListener("DOMContentLoaded", () => {
             chartStage.style.setProperty("--legend-scroll-shift", `${((1 - smoothProgress) * 32).toFixed(2)}px`);
         }
 
+        if (focusLayout && !focusCentered && dashboardMain && dashboardHeader && summaryGrid) {
+            const headerBottom = dashboardHeader.getBoundingClientRect().bottom;
+            const summaryTop = summaryGrid.getBoundingClientRect().top;
+            const chartBounds = chartStage.getBoundingClientRect();
+            if (summaryTop >= headerBottom && chartBounds.bottom <= viewportHeight) {
+                const topGap = summaryTop - headerBottom;
+                const bottomGap = viewportHeight - chartBounds.bottom;
+                const shift = (topGap - bottomGap) / 2;
+                dashboardMain.style.setProperty("--dashboard-focus-shift", `${shift.toFixed(1)}px`);
+                focusCentered = true;
+            }
+        }
+
         render(smoothProgress);
         ticking = false;
     };
@@ -223,7 +267,10 @@ document.addEventListener("DOMContentLoaded", () => {
         window.requestAnimationFrame(renderScrollScene);
     };
 
-    window.addEventListener("scroll", requestScrollRender, { passive: true });
+    window.addEventListener("scroll", () => {
+        updateFocusLayoutFromScroll();
+        requestScrollRender();
+    }, { passive: true });
     window.addEventListener("resize", requestScrollRender);
     renderScrollScene();
     canvas.addEventListener("mousemove", (event) => {

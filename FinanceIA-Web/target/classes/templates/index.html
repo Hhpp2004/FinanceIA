@@ -13,7 +13,7 @@
         .scroll-progress { position: fixed; z-index: 100; top: 0; left: 0; width: 100%; height: 3px; pointer-events: none; background: transparent; }
         .scroll-progress span { display: block; width: 100%; height: 100%; background: linear-gradient(90deg, #1a73e8, #34a853, #fbbc04); transform: scaleX(var(--scroll-progress, 0)); transform-origin: left center; will-change: transform; }
         a, button { font: inherit; } a { color: inherit; text-decoration: none; }
-        .site-header { min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 20px; max-width: 1280px; margin: auto; padding: 12px 32px; }
+        .site-header { min-height: 72px; position: sticky; top: 0; z-index: 30; display: flex; align-items: center; justify-content: space-between; gap: 20px; max-width: 1280px; margin: auto; padding: 12px 32px; background: rgb(255 255 255 / 94%); backdrop-filter: blur(12px); }
         .brand { display: inline-flex; align-items: center; gap: 11px; color: #202124; font-size: 20px; font-weight: 600; letter-spacing: -.45px; }
         .brand-mark { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(from 205deg, #4285f4 0 25%, #34a853 0 50%, #fbbc04 0 75%, #ea4335 0); color: #fff; font-size: 13px; font-weight: 800; box-shadow: inset 0 0 0 5px #fff; }
         .nav-actions { display: flex; align-items: center; gap: 10px; }

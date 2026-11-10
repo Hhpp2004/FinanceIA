@@ -161,6 +161,22 @@ public class WebController {
             @RequestParam String confirmarSenha,
             Model model,
             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+        nome = nome.trim();
+        email = email.trim();
+        telefone = telefone.trim();
+        if (containsEmoji(nome) || containsEmoji(email) || containsEmoji(telefone)
+                || containsEmoji(senha) || containsEmoji(confirmarSenha)) {
+            model.addAttribute("error", "Os campos não podem conter emojis.");
+            return "cadastro";
+        }
+        if (!isValidEmail(email)) {
+            model.addAttribute("error", "Informe um e-mail válido.");
+            return "cadastro";
+        }
+        if (!isValidInternationalPhone(telefone)) {
+            model.addAttribute("error", "Informe o país e um telefone válido com DDD.");
+            return "cadastro";
+        }
         if (!senha.matches(STRONG_PASSWORD)) {
             model.addAttribute("error", "A senha não atende a todos os requisitos de segurança.");
             return "cadastro";
@@ -332,7 +348,18 @@ public class WebController {
         var extrato = extratoRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new IllegalArgumentException("Extrato não encontrado"));
         DateTimeFormatter dataFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy");
-        List<OperacaoView> operacoes = operacaoRepository.findByExtrato(extrato).stream()
+        var operacoesDoExtrato = operacaoRepository.findByExtrato(extrato);
+        Map<String, Double> gastosPorCategoria = new LinkedHashMap<>();
+        for (Categoria categoria : Categoria.values()) {
+            gastosPorCategoria.put(categoria.name(), 0.0);
+        }
+        operacoesDoExtrato.stream()
+                .filter(operacao -> operacao.getTipo() == Tipo.SAIDA)
+                .forEach(operacao -> gastosPorCategoria.merge(
+                        operacao.getCategoria() == null ? Categoria.OUTROS.name() : operacao.getCategoria().name(),
+                        Math.abs(operacao.getValor()), Double::sum));
+
+        List<OperacaoView> operacoes = operacoesDoExtrato.stream()
                 .sorted(Comparator.comparing(financa.backend.Model.Operacao::getData)
                 .thenComparing(financa.backend.Model.Operacao::getTime).reversed())
                 .map(operacao -> new OperacaoView(
@@ -342,6 +369,8 @@ public class WebController {
                 .toList();
         model.addAttribute("extrato", extrato);
         model.addAttribute("operacoes", operacoes);
+        model.addAttribute("gastosPorCategoria", gastosPorCategoria);
+        model.addAttribute("categorias", Categoria.values());
         model.addAttribute("tituloExtrato", extrato.getNome().replace(" / ", " de "));
         return "extrato-detalhe";
     }
@@ -400,10 +429,23 @@ public class WebController {
             org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
         Users user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalStateException("Usuário autenticado não encontrado"));
+        nome = nome.trim();
+        email = email.trim();
+        telefone = telefone.trim();
         boolean desejaTrocarSenha = novaSenha != null && !novaSenha.isBlank();
 
+        if (containsEmoji(nome) || containsEmoji(email) || containsEmoji(telefone)
+                || containsEmoji(senhaAtual) || containsEmoji(novaSenha) || containsEmoji(confirmarNovaSenha)) {
+            return configuracoesComErro(model, user, "Os campos não podem conter emojis.");
+        }
         if (nome.isBlank() || email.isBlank() || telefone.isBlank()) {
             return configuracoesComErro(model, user, "Preencha todos os dados da conta.");
+        }
+        if (!isValidEmail(email)) {
+            return configuracoesComErro(model, user, "Informe um e-mail válido.");
+        }
+        if (!isValidInternationalPhone(telefone)) {
+            return configuracoesComErro(model, user, "Informe o país e um telefone válido com DDD.");
         }
         if (!email.equalsIgnoreCase(user.getEmail()) && userRepository.existsByEmail(email)) {
             return configuracoesComErro(model, user, "Este e-mail já está sendo utilizado.");
@@ -434,5 +476,31 @@ public class WebController {
         model.addAttribute("usuario", user);
         model.addAttribute("error", mensagem);
         return "configuracoes";
+    }
+
+    private static boolean isValidEmail(String email) {
+        return email != null && email.length() <= 254
+                && email.matches("^[A-Za-z0-9.!#$%&'*+/=?^_`{|}~-]+@[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)+$");
+    }
+
+    private static boolean isValidInternationalPhone(String phone) {
+        if (phone == null) return false;
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("^\\+(351|55|44|34|33|49|39|52|54|1)(.*)$").matcher(phone);
+        if (!matcher.matches()) return false;
+        String countryCode = matcher.group(1);
+        String nationalDigits = matcher.group(2).replaceAll("\\D", "");
+        if (countryCode.equals("55")) return nationalDigits.matches("[1-9][0-9](?:9[0-9]{8}|[0-9]{8})");
+        return java.util.Set.of("1", "351", "44", "34", "33", "49", "39", "52", "54")
+                .contains(countryCode) && nationalDigits.matches("[0-9]{7,12}");
+    }
+
+    private static boolean containsEmoji(String value) {
+        if (value == null) return false;
+        return value.codePoints().anyMatch(codePoint ->
+                (codePoint >= 0x1F000 && codePoint <= 0x1FAFF)
+                        || (codePoint >= 0x2600 && codePoint <= 0x27BF)
+                        || (codePoint >= 0x1F1E6 && codePoint <= 0x1F1FF)
+                        || codePoint == 0xFE0F || codePoint == 0x200D);
     }
 }

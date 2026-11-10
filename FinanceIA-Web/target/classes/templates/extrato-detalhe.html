@@ -39,6 +39,28 @@
             </div>
         </section>
 
+        <section class="chart-card statement-chart-card" aria-labelledby="statement-chart-title">
+            <div class="card-heading">
+                <div><p class="eyebrow">Distribuição</p><h2 id="statement-chart-title">Gastos por categoria</h2></div>
+                <span class="month-chip" th:text="${tituloExtrato}">Novembro de 2026</span>
+            </div>
+            <div class="chart-content">
+                <div class="chart-wrap">
+                    <canvas id="statement-category-chart" width="460" height="460" aria-label="Gráfico de gastos por categoria neste extrato"></canvas>
+                    <div class="chart-center"><small>Total de saídas</small><strong data-statement-chart-total th:text="${#numbers.formatCurrency(extrato.saldo.saldoSaida)}">R$ 0,00</strong></div>
+                    <div class="chart-tooltip" data-statement-chart-tooltip hidden></div>
+                </div>
+                <div class="chart-legend">
+                    <div class="legend-row" th:each="categoria, status : ${categorias}">
+                        <span class="legend-color" th:classappend="' legend-color-' + ${status.index}"></span>
+                        <span th:text="${categoria.nome}">Categoria</span>
+                        <strong th:text="${#numbers.formatCurrency(gastosPorCategoria[categoria.name()])}">R$ 0,00</strong>
+                    </div>
+                </div>
+            </div>
+            <p class="empty-chart" data-statement-empty-chart hidden>Este extrato ainda não tem saídas registradas.</p>
+        </section>
+
         <aside class="report-success" th:if="${param.relatorioEnviado}" role="status"
                aria-live="polite" data-report-notification>
             <span class="report-success-icon" aria-hidden="true">✓</span>
@@ -62,5 +84,7 @@
             window.setTimeout(closeNotification, 6000);
         }
     </script>
+    <script th:inline="javascript">window.statementCategoryData = /*[[${gastosPorCategoria}]]*/ {};</script>
+    <script defer th:src="@{/js/statement-chart.js}"></script>
 </body>
 </html>
