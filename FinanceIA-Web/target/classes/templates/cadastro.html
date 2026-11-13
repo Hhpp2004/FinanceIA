@@ -9,6 +9,7 @@
     <script defer th:src="@{/webjars/htmx.org/2.0.4/dist/htmx.min.js}"></script>
     <script defer th:src="@{/js/login.js}"></script>
     <script defer th:src="@{/js/cadastro.js}"></script>
+    <script defer th:src="@{/js/account-fields.js}"></script>
     <script defer th:src="@{/js/password-toggle.js}"></script>
   </head>
   <body class="login-page registration-page">
@@ -41,22 +42,33 @@
         <form class="login-form registration-form" th:action="@{/web-cadastro}" method="post" data-loading-label="Criando conta...">
           <div class="field-group">
             <label for="nome">Nome</label>
-            <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Seu nome completo" required autofocus />
+            <input id="nome" name="nome" type="text" autocomplete="name" placeholder="Seu nome completo" required autofocus data-no-emoji />
           </div>
 
           <div class="field-group">
             <label for="email">E-mail</label>
-            <input id="email" name="email" type="email" autocomplete="email" placeholder="seu@email.com" required />
+            <input id="email" name="email" type="email" autocomplete="email" placeholder="seu@email.com" required maxlength="254" data-no-emoji />
           </div>
 
           <div class="field-group">
             <label for="telefone">Telefone</label>
-            <input id="telefone" name="telefone" type="tel" autocomplete="tel" placeholder="(00) 00000-0000" required />
+            <div class="phone-input-group">
+              <select id="paisTelefone" aria-label="País do telefone" required>
+                <option value="" selected disabled>País</option>
+                <option value="55">Brasil (+55)</option><option value="1">Estados Unidos/Canadá (+1)</option>
+                <option value="351">Portugal (+351)</option><option value="44">Reino Unido (+44)</option>
+                <option value="34">Espanha (+34)</option><option value="33">França (+33)</option>
+                <option value="49">Alemanha (+49)</option><option value="39">Itália (+39)</option>
+                <option value="52">México (+52)</option><option value="54">Argentina (+54)</option>
+              </select>
+              <input id="telefone" type="tel" autocomplete="tel-national" inputmode="numeric" placeholder="DDD + número" required data-phone-local data-no-emoji />
+              <input id="telefoneCompleto" name="telefone" type="hidden" />
+            </div>
           </div>
 
           <div class="field-group">
             <label for="senha">Senha</label>
-            <input id="senha" name="senha" type="password" autocomplete="new-password" placeholder="••••••••" minlength="8" aria-describedby="password-requirements" required />
+            <input id="senha" name="senha" type="password" autocomplete="new-password" placeholder="Mínimo 8 caracteres" minlength="8" aria-describedby="password-requirements" required data-no-emoji />
             <div id="password-requirements" class="password-requirements" aria-live="polite">
               <p>A senha deve conter:</p>
               <ul>
@@ -71,7 +83,7 @@
 
           <div class="field-group">
             <label for="confirmarSenha">Confirmar Senha</label>
-            <input id="confirmarSenha" name="confirmarSenha" type="password" autocomplete="new-password" placeholder="••••••••" minlength="8" aria-describedby="password-match" required />
+            <input id="confirmarSenha" name="confirmarSenha" type="password" autocomplete="new-password" placeholder="Confirme sua senha" minlength="8" aria-describedby="password-match" required data-no-emoji />
             <p id="password-match" class="password-match" aria-live="polite"></p>
           </div>
 

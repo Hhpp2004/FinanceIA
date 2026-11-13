@@ -27,7 +27,7 @@
           A autorização expirou. Solicite um novo código.
         </div>
 
-        <form class="login-form recovery-form" th:action="@{/web-esqueci-senha}" method="post" hx-boost="true" data-loading-label="Enviando código...">
+        <form class="login-form recovery-form" th:action="@{/web-esqueci-senha}" method="post" data-loading-label="Enviando código...">
           <div class="field-group">
             <label for="email">E-mail da sua conta</label>
             <input id="email" name="email" type="email" autocomplete="email" placeholder="seu@email.com" required autofocus />

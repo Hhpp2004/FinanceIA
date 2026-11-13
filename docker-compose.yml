@@ -6,8 +6,19 @@ services:
             - ./Caddyfile:/etc/caddy/Caddyfile
             - caddy_data:/data
         networks: [frontend]
-        depends_on: [financeia-web]
+        depends_on: 
+            - load-balancer
         restart: unless-stopped
+
+    load-balancer:
+        image: nginx:1.28-alpine
+        volumes:
+            - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+        networks: [frontend]
+        depends_on:
+            - financeia-web
+        restart: unless-stopped
+
 
     financeia-web:
         build: ./FinanceIA-Web

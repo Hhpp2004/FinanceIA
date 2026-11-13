@@ -1,5 +1,7 @@
 package financa.backend.Controller;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.YearMonth;
@@ -12,6 +14,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -33,6 +36,7 @@ import financa.backend.Service.OperacaoService;
 import financa.backend.Service.AcoesService;
 import financa.backend.Service.GenerateFilePDF;
 import financa.backend.Service.UserService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 
 @Controller
@@ -89,10 +93,16 @@ public class WebController {
     }
 
     @PostMapping("/web-esqueci-senha")
-    public String solicitarRecuperacao(@RequestParam String email,
-            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes) {
+    public Object solicitarRecuperacao(@RequestParam String email,
+            org.springframework.web.servlet.mvc.support.RedirectAttributes redirectAttributes,
+            HttpServletRequest request) {
         userService.requestPasswordReset(email);
         redirectAttributes.addAttribute("email", email);
+        if ("true".equalsIgnoreCase(request.getHeader("HX-Request"))) {
+            String target = request.getContextPath() + "/verificar-codigo?email="
+                    + URLEncoder.encode(email, StandardCharsets.UTF_8);
+            return ResponseEntity.noContent().header("HX-Redirect", target).build();
+        }
         return "redirect:/verificar-codigo";
     }
 
@@ -342,6 +352,7 @@ public class WebController {
 
     @GetMapping("/extratos/{id}")
     public String visualizarExtrato(@org.springframework.web.bind.annotation.PathVariable UUID id,
+            @org.springframework.web.bind.annotation.RequestParam(name = "relatorio", required = false) String resultadoRelatorio,
             Principal principal, Model model) {
         Users user = userRepository.findByEmail(principal.getName())
                 .orElseThrow(() -> new IllegalStateException("Usuário autenticado não encontrado"));
@@ -372,6 +383,8 @@ public class WebController {
         model.addAttribute("gastosPorCategoria", gastosPorCategoria);
         model.addAttribute("categorias", Categoria.values());
         model.addAttribute("tituloExtrato", extrato.getNome().replace(" / ", " de "));
+        model.addAttribute("relatorioEnviado", "sucesso".equals(resultadoRelatorio));
+        model.addAttribute("relatorioFalhou", "falha".equals(resultadoRelatorio));
         return "extrato-detalhe";
     }
 
@@ -382,8 +395,12 @@ public class WebController {
                 .orElseThrow(() -> new IllegalStateException("Usuário autenticado não encontrado"));
         var extrato = extratoRepository.findByIdAndUser(id, user)
                 .orElseThrow(() -> new IllegalArgumentException("Extrato não encontrado"));
-        generateFilePDF.generateAndSend(user, extrato);
-        return "redirect:/extratos/" + id + "?relatorioEnviado";
+        try {
+            generateFilePDF.generateAndSend(user, extrato);
+            return "redirect:/extratos/" + id + "?relatorio=sucesso";
+        } catch (RuntimeException exception) {
+            return "redirect:/extratos/" + id + "?relatorio=falha";
+        }
     }
 
     @GetMapping("/extratos/{extratoId}/operacoes/{operacaoId}")

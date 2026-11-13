@@ -2,10 +2,58 @@ document.addEventListener("DOMContentLoaded", () => {
     const canvas = document.querySelector("#statement-category-chart");
     if (!canvas) return;
     const chartCard = document.querySelector(".statement-chart-card");
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const transactionCount = document.querySelectorAll(".transactions-list .transaction-row").length;
-    if (transactionCount <= 3) document.body.classList.add("statement-compact-list");
+    const transactionsCard = document.querySelector(".transactions-card");
+    const reportForm = document.querySelector(".statement-main > form");
+    const scrollIndicator = document.querySelector("[data-statement-scroll-indicator]");
+    if (reportForm && chartCard && transactionsCard && scrollIndicator) {
+        scrollIndicator.hidden = false;
+        let chartMode = false;
+        const setMode = (showChart) => {
+            chartMode = showChart;
+            document.body.classList.toggle("statement-chart-mode", chartMode);
+            document.body.classList.toggle("statement-list-mode", !chartMode);
+            (chartMode ? chartCard : transactionsCard).append(reportForm);
+            scrollIndicator.innerHTML = chartMode
+                ? '<span aria-hidden="true">↑</span> Ver transações'
+                : '<span aria-hidden="true">↓</span> Ver gráfico';
+            if (chartMode) window.requestAnimationFrame(() => render());
+        };
+        setMode(false);
+        scrollIndicator.addEventListener("click", () => {
+            setMode(!chartMode);
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        });
 
+        let lastScrollY = window.scrollY;
+        let switchingByScroll = false;
+        const switchAtEdge = (direction) => {
+            if (switchingByScroll) return;
+            const atTop = window.scrollY <= 2;
+            const atBottom = window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 4;
+            if ((!chartMode && direction > 0 && atBottom) || (chartMode && direction < 0 && atTop)) {
+                switchingByScroll = true;
+                setMode(direction > 0);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+                window.setTimeout(() => { switchingByScroll = false; }, 500);
+            }
+        };
+        window.addEventListener("wheel", event => switchAtEdge(event.deltaY), { passive: true });
+        window.addEventListener("scroll", () => {
+            const currentY = window.scrollY;
+            const direction = currentY - lastScrollY;
+            lastScrollY = currentY;
+            if (direction > 0 && currentY + window.innerHeight >= document.documentElement.scrollHeight - 4) {
+                switchAtEdge(direction);
+            }
+        }, { passive: true });
+        let touchStartY = 0;
+        window.addEventListener("touchstart", event => { touchStartY = event.touches[0]?.clientY || 0; }, { passive: true });
+        window.addEventListener("touchend", event => {
+            const touchEndY = event.changedTouches[0]?.clientY || touchStartY;
+            const gesture = touchStartY - touchEndY;
+            if (Math.abs(gesture) > 35) switchAtEdge(gesture);
+        }, { passive: true });
+    }
     const raw = window.statementCategoryData || {};
     const categories = [
         ["MORADIA", "Moradia", "#f59e0b"],
@@ -27,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelector("[data-statement-chart-total]").textContent = money.format(total);
     if (total === 0 && emptyMessage) emptyMessage.hidden = false;
 
-    let chartProgress = reduceMotion ? 1 : 0;
+    const chartProgress = 1;
     const render = (reveal = chartProgress) => {
         const size = Math.min(canvas.parentElement.clientWidth, 460);
         const ratio = window.devicePixelRatio || 1;
@@ -57,38 +105,6 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     };
 
-    let focusLayout = false;
-    let lastScrollY = window.scrollY;
-    let ticking = false;
-    const clamp = (value) => Math.min(Math.max(value, 0), 1);
-    const renderScrollScene = () => {
-        const currentScrollY = window.scrollY;
-        const scrollDelta = currentScrollY - lastScrollY;
-        const chartTop = chartCard.getBoundingClientRect().top;
-        if (scrollDelta < -1 && focusLayout) {
-            focusLayout = false;
-            document.body.classList.remove("statement-focus-layout");
-        } else if (scrollDelta > 1 && !focusLayout && chartTop < window.innerHeight * .92) {
-            focusLayout = true;
-            document.body.classList.add("statement-focus-layout");
-        }
-        lastScrollY = window.scrollY;
-
-        const progress = reduceMotion ? 1 : clamp((window.innerHeight * .94 - chartTop) / (window.innerHeight * .62));
-        chartProgress = progress * progress * (3 - 2 * progress);
-        chartCard.style.setProperty("--statement-chart-opacity", chartProgress.toFixed(3));
-        chartCard.style.setProperty("--statement-chart-shift", `${((1 - chartProgress) * 64).toFixed(2)}px`);
-        chartCard.querySelector(".chart-legend")?.style.setProperty("--statement-legend-shift", `${((1 - chartProgress) * 28).toFixed(2)}px`);
-        chartCard.querySelector(".chart-legend")?.style.setProperty("--statement-legend-opacity", chartProgress.toFixed(3));
-        render(chartProgress);
-        ticking = false;
-    };
-    const requestScrollRender = () => {
-        if (ticking) return;
-        ticking = true;
-        window.requestAnimationFrame(renderScrollScene);
-    };
-
     canvas.addEventListener("pointermove", (event) => {
         const rect = canvas.getBoundingClientRect();
         const x = event.clientX - rect.left;
@@ -112,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
         tooltip.hidden = false;
     });
     canvas.addEventListener("pointerleave", () => tooltip.hidden = true);
-    window.addEventListener("scroll", requestScrollRender, { passive: true });
-    window.addEventListener("resize", requestScrollRender);
-    renderScrollScene();
+    window.addEventListener("resize", () => render());
+    render();
 });

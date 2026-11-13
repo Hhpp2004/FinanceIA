@@ -2,6 +2,10 @@
 :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
 * { box-sizing: border-box; }
 body { margin: 0; }
+@supports (min-height: 100svh) {
+    .login-page, .app-page, .dashboard-page, .operation-page, .statement-page,
+    .operation-detail-page, .stock-detail-page, .settings-page { min-height: 100svh; }
+}
 button, input, select, textarea { max-width: 100%; font: inherit; }
 img, svg, canvas, video { max-width: 100%; }
 main, form, section, article, aside { min-width: 0; }
@@ -184,11 +188,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .dashboard-intro, .market-card { transition: opacity .3s ease, transform .3s ease, visibility 0s; }
 .dashboard-focus-layout .dashboard-intro,
 .dashboard-focus-layout [data-market-card] {
-    visibility: hidden;
-    opacity: 0;
+    display: none;
     pointer-events: none;
     transform: translateY(-1.25rem);
-    transition: opacity .3s ease, transform .3s ease, visibility 0s linear .3s;
+    transition: none;
 }
 .dashboard-focus-layout .dashboard-main { width: min(100% - 2rem, 68rem); }
 .dashboard-focus-layout .dashboard-main { padding-top: 1.4rem; }
@@ -392,13 +395,14 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .statement-header h1 { margin: 0; font-size: clamp(1.5rem, 3vw, 2rem); letter-spacing: -.025em; }
 .statement-main { width: min(100% - 2.5rem, 78rem); margin: 0 auto; padding: 2rem 0 3.25rem; }
 .statement-summary { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
+.statement-summary { position: sticky; top: 8rem; z-index: 20; background: #19295f; padding: .5rem 0 1rem; }
 .statement-summary article { min-height: 8.3rem; display: grid; place-content: center; gap: 1.55rem; border: 1px solid #dce0e8; border-radius: .85rem; background: #fff; padding: 1.2rem; text-align: center; box-shadow: 0 10px 28px rgb(4 12 40 / 13%); }
-.statement-summary article { transform: translateY(0); transition: transform .42s cubic-bezier(.2, .75, .25, 1); }
-.statement-focus-layout .statement-summary article { transform: translateY(-1rem); }
-.transactions-card { transition: opacity .3s ease, transform .3s ease, visibility 0s; }
-.statement-focus-layout:not(.statement-compact-list) .transactions-card { visibility: hidden; opacity: 0; pointer-events: none; transform: translateY(-1.25rem); transition: opacity .3s ease, transform .3s ease, visibility 0s linear .3s; }
-.statement-chart-card { opacity: var(--statement-chart-opacity, 0); transform: translateY(var(--statement-chart-shift, 4rem)); }
-.statement-chart-card .chart-legend { opacity: var(--statement-legend-opacity, 0); transform: translateY(var(--statement-legend-shift, 1.75rem)); }
+.statement-chart-card { opacity: 1; transform: none; }
+.statement-chart-card .chart-legend { opacity: 1; transform: none; }
+.statement-chart-mode .transactions-card, .statement-list-mode .statement-chart-card { display: none; }
+.statement-chart-mode .statement-chart-card, .statement-list-mode .transactions-card { animation: statement-view-in .45s cubic-bezier(.2, .75, .25, 1) both; }
+@keyframes statement-view-in { from { opacity: 0; transform: translateY(1.25rem); } to { opacity: 1; transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .statement-chart-mode .statement-chart-card, .statement-list-mode .transactions-card { animation: none; } }
 .statement-summary article > span { font-size: 1rem; }
 .statement-summary strong { font-size: clamp(1.55rem, 3vw, 2rem); letter-spacing: -.025em; }
 .statement-income { color: #00ad45; }
@@ -422,7 +426,13 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .transaction-open { margin-left: .15rem; color: #8792a8; font-size: 1.5rem; line-height: 1; }
 .empty-transactions { margin: 1rem 0; color: #6b7280; text-align: center; font-size: .88rem; }
 .pdf-report-button { width: max-content; display: flex; align-items: center; justify-content: center; gap: .7rem; margin: 2rem auto 0; border: 0; border-radius: .55rem; background: #03020f; padding: .85rem 1.25rem; color: #fff; font-size: .88rem; font-weight: 600; text-decoration: none; cursor: pointer; box-shadow: 0 9px 24px rgb(4 8 28 / 24%); transition: background .15s, transform .15s; }
+.transactions-card .pdf-report-button, .statement-chart-card .pdf-report-button { margin-top: 1.5rem; }
+.statement-scroll-indicator { position: fixed; z-index: 25; right: 1.5rem; bottom: 1.5rem; display: inline-flex; align-items: center; gap: .55rem; border: 1px solid rgb(255 255 255 / 70%); border-radius: 2rem; background: #fff; padding: .8rem 1rem; color: #19295f; font: inherit; font-size: .85rem; font-weight: 650; box-shadow: 0 8px 24px rgb(4 12 40 / 24%); cursor: pointer; transition: transform .2s, box-shadow .2s; }
+.statement-scroll-indicator:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgb(4 12 40 / 28%); }
+.statement-scroll-indicator[hidden] { display: none; }
 .report-success { width: min(calc(100% - 2rem), 26rem); position: fixed; z-index: 20; top: 1rem; right: 1rem; display: flex; align-items: center; gap: .8rem; border: 1px solid #9ee8bf; border-radius: .75rem; background: #effcf5; padding: .9rem 1rem; color: #075f32; box-shadow: 0 12px 30px rgb(4 30 17 / 20%); animation: report-notification-in .25s ease-out; }
+.report-error { border-color: #f3b4b8; background: #fff1f2; color: #9f1239; }
+.report-error .report-success-icon { background: #dc2626; }
 .report-success-icon { width: 2rem; height: 2rem; flex: 0 0 auto; display: grid; place-items: center; border-radius: 50%; background: #0c9b50; color: #fff; font-weight: 800; }
 .report-success div { flex: 1; }
 .report-success strong { display: block; font-size: .9rem; }
@@ -431,9 +441,10 @@ button, a { -webkit-tap-highlight-color: transparent; }
 @keyframes report-notification-in { from { opacity: 0; transform: translateY(-.75rem); } to { opacity: 1; transform: translateY(0); } }
 .pdf-report-button:hover { background: #17152b; transform: translateY(-1px); }
 .pdf-report-button:focus-visible { outline: 3px solid rgb(143 180 255 / 55%); outline-offset: 3px; }
+@media (max-width: 760px) { .statement-scroll-indicator { right: 1rem; bottom: 1rem; } }
 @media (max-width: 760px) {
     .statement-main { width: min(100% - 1.25rem, 78rem); padding-top: 1.25rem; }
-    .statement-summary { grid-template-columns: 1fr; gap: .75rem; }
+    .statement-summary { grid-template-columns: 1fr; gap: .5rem; top: 7.5rem; padding: .25rem 0 .75rem; }
     .statement-summary article { min-height: 6rem; gap: .65rem; }
     .transactions-card { margin-top: 1rem; padding: 1rem; }
 }

@@ -1,131 +1,145 @@
 # FinanceIA
 
-O FinanceIA é uma plataforma de gestão financeira pessoal formada por dois serviços Java/Spring Boot: uma aplicação web para controle das finanças e um microsserviço assíncrono para envio de e-mails. A comunicação entre eles ocorre por RabbitMQ.
+Plataforma de gestão financeira pessoal desenvolvida com Java e Spring Boot. O repositório reúne a aplicação web, um serviço assíncrono de e-mail e um módulo independente para ações.
 
-## Componentes
+## Módulos
 
-| Módulo | Diretório | Responsabilidade | Porta |
+| Módulo | Diretório | O que faz | Porta padrão |
 | --- | --- | --- | --- |
-| FinanceIA Web | [`FinanceIA-Web`](FinanceIA-Web) | Interface web, API REST, operações financeiras, extratos, cotações e geração de relatórios PDF | `8443` (HTTPS) |
-| FinanceIA Email | [`FinanceIA - Email/FinanceIA - Email`](FinanceIA%20-%20Email/FinanceIA%20-%20Email) | Consumo da fila, envio de e-mails SMTP e histórico dos envios | `8444` |
+| FinanceIA Web | [`FinanceIA-Web`](FinanceIA-Web) | Interface Thymeleaf e API REST para contas, operações, saldos e extratos; consulta de ativos pela BRAPI; geração de relatórios PDF | `8443` (HTTPS local; internamente no Compose) |
+| FinanceIA Email | [`FinanceIA - Email/FinanceIA - Email`](FinanceIA%20-%20Email/FinanceIA%20-%20Email) | Consome pedidos em uma fila RabbitMQ, envia e-mails via Gmail SMTP e registra o resultado | `8444` |
+| financa.acoes | [`financa.acoes`](financa.acoes) | Módulo Spring Boot com configuração de JPA, PostgreSQL e RabbitMQ; ainda não integrado ao Compose ou ao fluxo principal | `8445` |
 
-Cada módulo possui seu próprio PostgreSQL no desenvolvimento:
+O Compose da raiz publica o site nas portas `80` e `443`, usando Caddy e Nginx como proxy reverso. Ele inicia bancos PostgreSQL separados para a aplicação web e para o histórico de e-mails. O RabbitMQ é uma dependência externa e precisa estar acessível aos dois serviços.
 
-- Web: `localhost:5433`;
-- E-mail: `localhost:5434`.
-
-## Arquitetura
+## Arquitetura principal
 
 ```text
-Navegador / cliente REST
-          |
-          v
-FinanceIA Web (Spring Boot + Thymeleaf + API)
-          |                 |
-          |                 +--> PostgreSQL (finanças)
-          |
-          +--> RabbitMQ --> FinanceIA Email --> SMTP
-                                  |
-                                  +--> PostgreSQL (histórico de e-mails)
+Navegador
+   |
+   v
+Caddy (80/443) -> Nginx (8080) -> FinanceIA Web
+                                      |       |
+                                      |       +-> PostgreSQL (finanças)
+                                      v
+                                 RabbitMQ externo
+                                      |
+                                      v
+                              FinanceIA Email -> Gmail SMTP
+                                      |
+                                      +-> PostgreSQL (histórico de e-mails)
 ```
 
-A aplicação web gera relatórios de extrato em PDF na memória e publica a solicitação de envio no RabbitMQ. O microsserviço de e-mails consome a mensagem, envia o e-mail e persiste o resultado (`ENVIADO` ou `ERRO`).
+A aplicação web gera o relatório PDF em memória e envia uma mensagem pela fila. O serviço de e-mail consome a mensagem, envia o anexo quando presente e persiste o status do envio.
 
-## Tecnologias principais
+## Tecnologias
 
-- Java 21 e Spring Boot
-- Spring MVC, Thymeleaf e Spring Security
-- Spring Data JPA e PostgreSQL 15
-- RabbitMQ com Spring AMQP
-- SMTP com Spring Mail
-- JasperReports para PDFs
-- Docker Compose para os bancos de desenvolvimento
+- Java 21 nos módulos FinanceIA Web e FinanceIA Email;
+- Spring Boot, Spring MVC, Thymeleaf, Spring Security e Spring Data JPA;
+- PostgreSQL 16 e Docker Compose;
+- RabbitMQ com Spring AMQP;
+- JasperReports para relatórios PDF;
+- BRAPI para pesquisa e consulta de ações e fundos imobiliários;
+- Caddy e Nginx como proxies no Compose da raiz.
 
-## Pré-requisitos
+O módulo `financa.acoes` está configurado com Java 25 e Spring Boot 4.1.0, e deve ser tratado separadamente dos requisitos da aplicação principal.
 
-- JDK 21;
-- Docker com Docker Compose;
-- RabbitMQ acessível aos dois serviços;
-- Credenciais SMTP (senha de aplicativo);
-- Chave da [BRAPI](https://brapi.dev/) para consultas de ações e fundos imobiliários pela aplicação web.
+## Requisitos
 
-## Configuração rápida
+- Docker com o plugin Docker Compose;
+- JDK 21 para executar os módulos web e de e-mail fora dos containers;
+- RabbitMQ acessível pela aplicação web e pelo serviço de e-mail;
+- chave BRAPI para as consultas de mercado;
+- senha de aplicativo Gmail para o envio SMTP.
 
-Os arquivos `.env` não devem ser versionados. Crie um em cada módulo antes de iniciá-los.
+## Configuração do Compose da raiz
 
-### Aplicação web
+O Compose da raiz lê as credenciais dos bancos de um arquivo `.env` na raiz e carrega configurações próprias dos dois serviços por meio de `env_file`. Crie os três arquivos abaixo; não reutilize as variáveis de um arquivo em outro sem conferir os nomes esperados.
 
-Crie `FinanceIA-Web/.env`:
+### `.env` na raiz
+
+Usado para provisionar os dois bancos:
 
 ```dotenv
-DB_USERNAME=postgres
-DB_PASSWORD=uma-senha-segura
+DB_USERNAME=financeia
+DB_PASSWORD=troque-por-uma-senha-forte
+```
+
+### `FinanceIA-Web/.env`
+
+```dotenv
+DB_USERNAME=financeia
+DB_PASSWORD=troque-por-uma-senha-forte
 DB_NAME=financas
-DB_PORT=5433
-
-RABBITMQ_KEY=amqp://usuario:senha@localhost:5672
+DB_PORT=5432
+RABBITMQ_KEY=amqp://usuario:senha@host-do-rabbitmq:5672
 NAME_QUEUE=email
-
 URL_BRAPI=https://brapi.dev/api/quote
 TOKEN=sua-chave-da-brapi
 ```
 
-### Microsserviço de e-mails
+Dentro do Compose, o banco web é acessível como `db:5432`. `DB_NAME` deve corresponder ao nome do banco criado pelo serviço `db` (`financas`).
 
-Crie `FinanceIA - Email/FinanceIA - Email/.env`:
+### `FinanceIA - Email/FinanceIA - Email/.env`
 
 ```dotenv
-USERNAME_DB=financeia
-PASSWORD_DB=uma-senha-segura
-KEY_RABBITMQ=amqp://usuario:senha@localhost:5672
-QUEUE_RABBITMQ=email
-SENHA_APP=senha-de-aplicativo-smtp
+DB_HOST=dbEmail
+DB_PORT=5432
+DB_USERNAME=financeia
+DB_PASSWORD=troque-por-uma-senha-forte
+KEY_RABBITMQ=amqp://usuario:senha@host-do-rabbitmq:5672
+NAME_EMAIL_QUEUE=email
+SENHA_APP=sua-senha-de-aplicativo-gmail
 ```
 
-`NAME_QUEUE` e `QUEUE_RABBITMQ` devem ter o mesmo valor. Ajuste os endereços e credenciais conforme a sua instância do RabbitMQ e o provedor SMTP utilizado.
+`NAME_QUEUE` e `NAME_EMAIL_QUEUE` precisam apontar para a mesma fila. Configure o hostname do RabbitMQ de forma que seja alcançável de dentro dos containers. As credenciais de usuário e senha dos bancos devem coincidir com as do `.env` da raiz.
 
-## Como executar localmente
+> Os nomes `RABBITMQ_KEY` e `KEY_RABBITMQ` são diferentes porque os módulos web e de e-mail possuem configurações próprias.
 
-1. Suba os bancos de dados:
+## Executar com Docker Compose
 
-   ```bash
-   cd FinanceIA-Web
-   docker compose up -d db
-   cd "../FinanceIA - Email/FinanceIA - Email"
-   docker compose up -d
-   ```
+Com os arquivos de configuração criados e o RabbitMQ disponível:
 
-2. Inicie o microsserviço de e-mails:
+```bash
+docker compose up -d --build
+```
 
-   ```bash
-   cd "FinanceIA - Email/FinanceIA - Email"
-   mvn spring-boot:run
-   ```
+A configuração local do Caddy atende `http://localhost`. O host `financeia.ddns.net` está configurado para HTTPS; para usá-lo, o DNS e o acesso externo às portas `80` e `443` precisam apontar para esta implantação. O Nginx está configurado como proxy interno para a aplicação web.
 
-3. Em outro terminal, inicie a aplicação web:
+Comandos úteis:
 
-   ```bash
-   cd FinanceIA-Web
-   ./mvnw spring-boot:run
-   ```
+```bash
+docker compose ps
+docker compose logs -f financeia-web financeia-email
+docker compose down
+```
 
-4. Acesse `https://localhost:8443`. O certificado local é autoassinado; o navegador pode apresentar um aviso no primeiro acesso.
+`docker compose down` preserva os dados nos volumes nomeados. Para apagar também os bancos, use `docker compose down -v`; isso remove permanentemente os dados locais.
 
-## Testes e build
+## Desenvolvimento local
+
+Para detalhes de configuração, execução direta, rotas, API e funcionalidades da aplicação, consulte o [README do FinanceIA Web](FinanceIA-Web/README.md). Para contrato da mensagem RabbitMQ e configuração SMTP, consulte o [README do FinanceIA Email](FinanceIA%20-%20Email/FinanceIA%20-%20Email/README.md).
+
+O Compose da raiz é voltado à execução em containers. Para iniciar o Spring Boot diretamente pelo Maven, confira os endereços e variáveis requeridos nos arquivos `application*.properties` de cada módulo; nomes de host como `db` e `dbEmail` só resolvem na rede Docker.
+
+## Build e testes
+
+FinanceIA Web (Maven Wrapper incluído):
 
 ```bash
 cd FinanceIA-Web
 ./mvnw clean test
+```
 
-cd "../FinanceIA - Email/FinanceIA - Email"
+FinanceIA Email (requer Maven instalado):
+
+```bash
+cd "FinanceIA - Email/FinanceIA - Email"
 mvn clean test
 ```
 
-## Documentação dos módulos
-
-- [FinanceIA Web](FinanceIA-Web/README.md): funcionalidades, rotas web e API, segurança, variáveis e relatórios.
-- [FinanceIA Email](FinanceIA%20-%20Email/FinanceIA%20-%20Email/README.md): contrato da mensagem RabbitMQ, configuração SMTP e resolução de problemas.
+O módulo `financa.acoes` também possui um teste básico de contexto; ele requer Java 25 e Maven. Os testes e builds não são executados pelo Compose da raiz.
 
 ## Segurança
 
-Não envie ao repositório arquivos `.env`, tokens da BRAPI, credenciais SMTP, senhas de banco, URLs RabbitMQ com credenciais ou chaves privadas. Para produção, prefira variáveis de ambiente e um gerenciador de segredos.
+Não versione arquivos `.env`, tokens BRAPI, senhas SMTP ou de banco, URLs RabbitMQ com credenciais, nem chaves privadas. Em produção, injete segredos pelo ambiente de implantação ou por um gerenciador de segredos. O repositório inclui material de certificado/chaves para desenvolvimento; revise e substitua qualquer credencial ou chave antes de publicar uma implantação.

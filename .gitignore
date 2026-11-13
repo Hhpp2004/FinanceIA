@@ -1,2 +1,5 @@
 /FinanceIA-Web/.env
 /.env
+
+# Ferramentas binárias locais
+/minikube-linux-amd64

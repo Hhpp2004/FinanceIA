@@ -61,12 +61,14 @@
             <p class="empty-chart" data-statement-empty-chart hidden>Este extrato ainda não tem saídas registradas.</p>
         </section>
 
-        <aside class="report-success" th:if="${param.relatorioEnviado}" role="status"
+        <aside class="report-success" th:if="${relatorioEnviado or relatorioFalhou}"
+               th:classappend="${relatorioFalhou} ? ' report-error' : ''"
+               th:attr="role=${relatorioFalhou} ? 'alert' : 'status'"
                aria-live="polite" data-report-notification>
-            <span class="report-success-icon" aria-hidden="true">✓</span>
+            <span class="report-success-icon" aria-hidden="true" th:text="${relatorioFalhou} ? '!' : '✓'">✓</span>
             <div>
-                <strong>Relatório enviado!</strong>
-                <p>O PDF foi enviado com sucesso para o seu e-mail.</p>
+                <strong th:text="${relatorioFalhou} ? 'Não foi possível enviar o relatório' : 'Relatório enviado!'">Relatório enviado!</strong>
+                <p th:text="${relatorioFalhou} ? 'Ocorreu um erro ao gerar ou enviar o PDF. Tente novamente.' : 'O PDF foi enviado com sucesso para o seu e-mail.'">O PDF foi enviado com sucesso para o seu e-mail.</p>
             </div>
             <button type="button" aria-label="Fechar notificação" data-close-notification>×</button>
         </aside>
@@ -75,6 +77,9 @@
                 <span aria-hidden="true">✉</span> Enviar relatório por e-mail
             </button>
         </form>
+        <button class="statement-scroll-indicator" type="button" data-statement-scroll-indicator hidden>
+            <span aria-hidden="true">↓</span> Role para ver o gráfico
+        </button>
     </main>
     <script>
         const notification = document.querySelector('[data-report-notification]');

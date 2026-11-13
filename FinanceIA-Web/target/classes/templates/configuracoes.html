@@ -6,6 +6,7 @@
     <title>Configurações da conta | Gestão Financeira</title>
     <link rel="stylesheet" th:href="@{/css/app.css}">
     <script defer th:src="@{/js/password-toggle.js}"></script>
+    <script defer th:src="@{/js/account-fields.js}"></script>
 </head>
 <body class="settings-page">
     <header class="settings-header">
@@ -19,19 +20,29 @@
             <p class="settings-alert settings-error" th:if="${error}" th:text="${error}"></p>
             <p class="settings-alert settings-success" th:if="${success}" th:text="${success}"></p>
 
-            <form class="settings-form" th:action="@{/web-configuracoes}" method="post">
+            <form class="settings-form" th:action="@{/web-configuracoes}" method="post" data-account-fields>
                 <div class="settings-field">
                     <label for="nome">Nome</label>
-                    <input id="nome" name="nome" type="text" maxlength="100" th:value="${usuario.nome}" required>
+                    <input id="nome" name="nome" type="text" maxlength="100" th:value="${usuario.nome}" required data-no-emoji>
                 </div>
                 <div class="settings-field">
                     <label for="email">Email</label>
-                    <input id="email" name="email" type="email" th:value="${usuario.email}" readonly aria-describedby="email-help">
+                    <input id="email" name="email" type="email" maxlength="254" th:value="${usuario.email}" readonly aria-describedby="email-help" data-no-emoji>
                     <small id="email-help">O e-mail da conta não pode ser alterado nesta tela.</small>
                 </div>
                 <div class="settings-field">
                     <label for="telefone">Telefone</label>
-                    <input id="telefone" name="telefone" type="tel" maxlength="20" th:value="${usuario.telefone}" required>
+                    <div class="phone-input-group">
+                        <select id="paisTelefone" aria-label="País do telefone" required>
+                            <option value="" disabled>País</option><option value="55">Brasil (+55)</option>
+                            <option value="1">Estados Unidos/Canadá (+1)</option><option value="351">Portugal (+351)</option>
+                            <option value="44">Reino Unido (+44)</option><option value="34">Espanha (+34)</option>
+                            <option value="33">França (+33)</option><option value="49">Alemanha (+49)</option>
+                            <option value="39">Itália (+39)</option><option value="52">México (+52)</option><option value="54">Argentina (+54)</option>
+                        </select>
+                        <input id="telefone" type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="DDD + número" required data-phone-local data-no-emoji>
+                        <input id="telefoneCompleto" name="telefone" type="hidden">
+                    </div>
                 </div>
 
                 <div class="password-settings">
@@ -39,15 +50,15 @@
                     <p>Deixe estes campos vazios se não quiser trocar sua senha.</p>
                     <div class="settings-field">
                         <label for="senha-atual">Senha atual</label>
-                        <input id="senha-atual" name="senhaAtual" type="password" autocomplete="current-password" placeholder="Digite sua senha atual">
+                        <input id="senha-atual" name="senhaAtual" type="password" autocomplete="current-password" placeholder="Digite sua senha atual" data-no-emoji>
                     </div>
                     <div class="settings-field">
                         <label for="nova-senha">Nova senha</label>
-                        <input id="nova-senha" name="novaSenha" type="password" autocomplete="new-password" placeholder="Digite a nova senha">
+                        <input id="nova-senha" name="novaSenha" type="password" autocomplete="new-password" placeholder="Digite a nova senha" data-no-emoji>
                     </div>
                     <div class="settings-field">
                         <label for="confirmar-nova-senha">Confirmar nova senha</label>
-                        <input id="confirmar-nova-senha" name="confirmarNovaSenha" type="password" autocomplete="new-password" placeholder="Repita a nova senha">
+                        <input id="confirmar-nova-senha" name="confirmarNovaSenha" type="password" autocomplete="new-password" placeholder="Repita a nova senha" data-no-emoji>
                     </div>
                 </div>
 
